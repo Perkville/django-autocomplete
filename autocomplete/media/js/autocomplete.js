@@ -1,5 +1,5 @@
 
-function yui_autocomplete(name, ac_url) {
+function yui_autocomplete(name, ac_url, force_selection) {
     YAHOO.util.Event.onDOMReady(function () {
         var datasource = new YAHOO.util.XHRDataSource(ac_url);
         datasource.responseType = YAHOO.util.XHRDataSource.TYPE_JSON;
@@ -16,13 +16,7 @@ function yui_autocomplete(name, ac_url) {
         }
         datasource.resultTypeList = false;
 
-        var select = document.getElementById("id_"+name);
-        var input = document.getElementById("id_ac_"+name);
-
-        YAHOO.util.Dom.addClass(input.parentNode, "yui-ac");
-
-        select.style.display = "none";
-        input.style.display = "block";
+        var input = document.getElementById("id_"+name);
 
         var container = document.createElement("div");
         YAHOO.util.Dom.insertAfter(container, input);
@@ -30,10 +24,18 @@ function yui_autocomplete(name, ac_url) {
         var autocomplete = new YAHOO.widget.AutoComplete(input, container, datasource);
         autocomplete.resultTypeList = false;
         autocomplete.queryDelay = .5;
+        autocomplete.forceSelection = force_selection;
 
+        var selected_item = {label: null, id: null};
+        var hidden = document.getElementById("id_hidden_"+name)
         autocomplete.itemSelectEvent.subscribe(function (type, args) {
-            var item = args[2];
-            select.value = item.id;
+            selected_item = args[2];
+            hidden.value = selected_item.id;
+        });
+        form = document.getElementsByTagName("form")[0];
+        YAHOO.util.Event.addListener(form, "submit", function (event, form) {
+            if (selected_item.label != input.value && !force_selection)
+                hidden.value = input.value;
         });
     });
 }

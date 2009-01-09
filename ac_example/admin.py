@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.models import Message
-from actest.acapp import forms
+from ac_example import forms
 
 class MessageAdmin(admin.ModelAdmin):
     form = forms.InsertMessage

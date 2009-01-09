@@ -1,17 +1,12 @@
 from django.conf.urls.defaults import *
 
 from django.contrib.auth.models import User
-from autocomplete import ac
+from autocomplete.views import autocomplete
 
-info_dict = {
-    'settings': {
-        'user': ac(User.objects.all(), ('username', 'email'), 5),
-    },
-    'query_param': 'query',
-}
+
+autocomplete.register('user', User.objects.all(), ('username', 'email'), 5)
 
 urlpatterns = patterns('',
-    url('^autocomplete/(\w+)/$', 'autocomplete.views.autocomplete', info_dict,
-        name='autocomplete'),
-    url('^example/$', 'actest.acapp.views.example'),
+    url('^autocomplete/(\w+)/$', autocomplete, name='autocomplete'),
+    url('^example/$', 'ac_example.views.example'),
 )

@@ -1,11 +1,21 @@
-from django import forms
+from django.forms import widgets
 from django.utils.safestring import mark_safe
 from django.core.urlresolvers import reverse
 
 
 # FIXME not ready for admin edit page, need ac_id_%(name)s prefill (2 line of js).
 
-class ModelAutoComplete(forms.Select):
+AC_TEMPLATE = u'''
+<div>
+  <input type="hidden" name="%(name)s" id="id_hidden_%(name)s" />
+  <input type="text" id="id_%(name)s" />
+  <script type="text/javascript">autocomplete("%(name)s", "%(url)s", %(force_selection)s);</script>
+</div>
+'''
+
+class AutoComplete(widgets.Widget):
+
+    AC_TEMPLATE = AC_TEMPLATE
 
     class Media:
         css = {'all':
@@ -19,15 +29,24 @@ class ModelAutoComplete(forms.Select):
               '&2.6.0/build/autocomplete/autocomplete-min.js',
               'js/autocomplete.js')
 
-    def __init__(self, ac_name, attrs=None, view_name='autocomplete'):
-        super(ModelAutoComplete, self).__init__(attrs, ())
+    def __init__(self, ac_name, force_selection=True, view_name='autocomplete', attrs=None):
+        super(AutoComplete, self).__init__(attrs)
         self.ac_name = ac_name
         self.view_name = view_name
+        self.force_selection = force_selection
     
     def render(self, name, value, attrs=None, choices=()):
-        output = [super(ModelAutoComplete, self).render(name, value, attrs, choices)]
-        output.append(u'<input type="text" id="id_ac_%s" style="display:none" />\n' % (name))
-        output.append(u'<script type="text/javascript">autocomplete("%s", "%s");</script>\n' %
-            (name, reverse(self.view_name, args=[self.ac_name])))
-        return mark_safe(u''.join(output))
+        #input = super(AutoComplete, self).render(name, value, attrs)
+        url = reverse(self.view_name, args=[self.ac_name])
+        force_selection = str(self.force_selection).lower()
+        return mark_safe(self.AC_TEMPLATE % locals())
 
+"""
+# TODO:
+class AdvancedChoiceField(forms.CharField):
+    
+    def __init__(self, ac_name=None, *args, **kwargs):
+        if not kwargs.pop('widget'):
+            kwargs['widget'] = AutoComplete(ac_name)
+        super(AdvancedChoiceField, self).__init__(*args, **kwargs)
+"""
