@@ -3,8 +3,6 @@ from django.db.models import Q
 from django.utils import simplejson
 from django.utils.encoding import smart_unicode
 
-AUTOCOMPLETE_NOTFOUND = HttpResponse(status=404)
-AUTOCOMPLETE_FORBIDDEN = HttpResponse(status=403)
 
 class AutoComplete(object):
 
@@ -13,11 +11,11 @@ class AutoComplete(object):
 
     def __call__(self, request, ac_name, query_param='query'):
         if not self.settings.get(ac_name):
-            return AUTOCOMPLETE_NOTFOUND
+            return self.not_found(ac_name)
 
         qs, fields, limit, key, label, auth = self.settings[ac_name]
         if auth and not request.user.is_authenticated():
-            return AUTOCOMPLETE_FORBIDDEN
+            return self.forbidden(ac_name)
         query = request.GET.get(query_param, '')
         
         filter = Q()
@@ -41,5 +39,11 @@ class AutoComplete(object):
 
     def register(self, id, queryset, fields, limit=None, key='pk', label=lambda obj: smart_unicode(obj), auth=False):
         self.settings[id] = (queryset, fields, limit, key, label, auth)
+
+    def not_found(self, ac_name):
+        return HttpResponse(status=404)
+
+    def forbidden(self, ac_name):
+        return HttpResponse(status=403)
 
 autocomplete = AutoComplete()

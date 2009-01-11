@@ -13,7 +13,7 @@ AC_TEMPLATE = u'''
 </div>
 '''
 
-class AutoComplete(widgets.Widget):
+class AutoCompleteWidget(widgets.Widget):
 
     AC_TEMPLATE = AC_TEMPLATE
 
@@ -23,14 +23,15 @@ class AutoComplete(widgets.Widget):
         }
         js = ('http://yui.yahooapis.com/combo'
               '?2.6.0/build/yahoo-dom-event/yahoo-dom-event.js'
-              '&2.6.0/build/animation/animation-min.js'
+              # decomment to enable animation.
+              #'&2.6.0/build/animation/animation-min.js'
               '&2.6.0/build/connection/connection-min.js'
               '&2.6.0/build/datasource/datasource-min.js'
               '&2.6.0/build/autocomplete/autocomplete-min.js',
               'js/autocomplete.js')
 
     def __init__(self, ac_name, force_selection=True, view_name='autocomplete', attrs=None):
-        super(AutoComplete, self).__init__(attrs)
+        super(AutoCompleteWidget, self).__init__(attrs)
         self.ac_name = ac_name
         self.view_name = view_name
         self.force_selection = force_selection
@@ -41,12 +42,3 @@ class AutoComplete(widgets.Widget):
         force_selection = str(self.force_selection).lower()
         return mark_safe(self.AC_TEMPLATE % locals())
 
-"""
-# TODO:
-class AdvancedChoiceField(forms.CharField):
-    
-    def __init__(self, ac_name=None, *args, **kwargs):
-        if not kwargs.pop('widget'):
-            kwargs['widget'] = AutoComplete(ac_name)
-        super(AdvancedChoiceField, self).__init__(*args, **kwargs)
-"""
