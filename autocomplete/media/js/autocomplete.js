@@ -17,9 +17,10 @@ function yui_autocomplete(name, ac_url, force_selection) {
         datasource.resultTypeList = false;
 
         var input = document.getElementById("id_"+name);
-
         var container = document.createElement("div");
         YAHOO.util.Dom.insertAfter(container, input);
+        if (!YAHOO.util.Dom.hasClass(document.body, "yui-skin-sam"))
+            YAHOO.util.Dom.addClass(document.body, "yui-skin-sam");
 
         var autocomplete = new YAHOO.widget.AutoComplete(input, container, datasource);
         autocomplete.resultTypeList = false;

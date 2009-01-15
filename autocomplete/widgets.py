@@ -1,6 +1,8 @@
 from django.forms import widgets
 from django.utils.safestring import mark_safe
 from django.core.urlresolvers import reverse
+from django.utils.encoding import force_unicode
+from django.forms.util import flatatt
 
 
 # FIXME not ready for admin edit page, need ac_id_%(name)s prefill (2 line of js).
@@ -8,7 +10,7 @@ from django.core.urlresolvers import reverse
 AC_TEMPLATE = u'''
 <div>
   <input type="hidden" name="%(name)s" id="id_hidden_%(name)s" />
-  <input type="text" id="id_%(name)s" />
+  <input type="text" id="id_%(name)s" %(attrs)s />
   <script type="text/javascript">autocomplete("%(name)s", "%(url)s", %(force_selection)s);</script>
 </div>
 '''
@@ -39,6 +41,10 @@ class AutoCompleteWidget(widgets.Widget):
     def render(self, name, value, attrs=None, choices=()):
         #input = super(AutoComplete, self).render(name, value, attrs)
         url = reverse(self.view_name, args=[self.ac_name])
-        force_selection = str(self.force_selection).lower()
+        force_selection = ['false', 'true'][self.force_selection]
+        if value:
+            attrs['value'] = force_unicode(value)
+        del value
+        attrs = flatatt(self.build_attrs(attrs))
         return mark_safe(self.AC_TEMPLATE % locals())
 
