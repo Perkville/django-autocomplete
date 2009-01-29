@@ -4,13 +4,12 @@ from django.core.urlresolvers import reverse
 from django.utils.encoding import force_unicode
 from django.forms.util import flatatt
 
-
-# FIXME not ready for admin edit page, need ac_id_%(name)s prefill (2 line of js).
+from autocomplete.views import autocomplete
 
 AC_TEMPLATE = u'''
 <div>
-  <input type="hidden" name="%(name)s" id="id_hidden_%(name)s" />
-  <input type="text" id="id_%(name)s" %(attrs)s />
+  <input type="hidden" name="%(name)s" id="id_hidden_%(name)s" value="%(hidden_value)s" />
+  <input type="text" id="id_%(name)s" value="%(value)s" %(attrs)s />
   <script type="text/javascript">autocomplete("%(name)s", "%(url)s", %(force_selection)s);</script>
 </div>
 '''
@@ -32,19 +31,24 @@ class AutoCompleteWidget(widgets.Widget):
               '&2.6.0/build/autocomplete/autocomplete-min.js',
               'js/autocomplete.js')
 
-    def __init__(self, ac_name, force_selection=True, view_name='autocomplete', attrs=None):
+    def __init__(self, ac_name, force_selection=True, reverse_label=True,
+                 view_name='autocomplete', attrs=None):
         super(AutoCompleteWidget, self).__init__(attrs)
         self.ac_name = ac_name
+        self.force_selection = bool(force_selection)
+        self.reverse_label = reverse_label
         self.view_name = view_name
-        self.force_selection = force_selection
     
     def render(self, name, value, attrs=None, choices=()):
-        #input = super(AutoComplete, self).render(name, value, attrs)
         url = reverse(self.view_name, args=[self.ac_name])
-        force_selection = ['false', 'true'][self.force_selection]
-        if value:
-            attrs['value'] = force_unicode(value)
-        del value
+        force_selection = ('false', 'true')[self.force_selection]
+        if not value:
+            value = hidden_value = u''
+        elif self.reverse_label:
+            hidden_value = force_unicode(value)
+            value = autocomplete.reverse_label(self.ac_name, value)
+        else:
+            value = force_unicode(value)
         attrs = flatatt(self.build_attrs(attrs))
         return mark_safe(self.AC_TEMPLATE % locals())
 

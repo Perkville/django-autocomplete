@@ -1,14 +1,15 @@
 from django.http import HttpResponse
 from django.shortcuts import render_to_response
 
-from ac_example.forms import InsertMessage
+from ac_example.forms import ExampleForm
 
 def example(request):
-    if request.method == 'POST':
-        form = InsertMessage(request.POST)
+    valid = False
+    if request.GET:
+        form = ExampleForm(request.GET)
         if form.is_valid():
-            return HttpResponse("yo!")
+            valid = True
     else:
-        form = InsertMessage()
+        form = ExampleForm()
 
-    return render_to_response("autocomplete.html", {'form':form})
+    return render_to_response("autocomplete.html", {'form':form,'valid':valid})

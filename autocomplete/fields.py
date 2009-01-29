@@ -1,30 +1,18 @@
-from django.forms.util import ValidationError
-from django.forms import fields
-from django.utils.translation import ugettext_lazy as _
-from autocomplete import AutoCompleteWidget, autocomplete
+from django import forms
+from autocomplete import autocomplete, AutoCompleteWidget
 
-class AutoCompleteField(fields.Field):
+class ModelChoiceField(forms.ModelChoiceField):
+    widget = AutoCompleteWidget
 
-    default_error_messages = {
-        'invalid_choice': _(u'Select a valid choice. That choice is not one of'
-                            u' the available choices.'),
-    } 
-    
-    def __init__(self, ac_name=None, force_selection=True,
-                 view_name='autocomplete', *args, **kwargs):
-        if not kwargs.get('widget'):
-            kwargs['widget'] = AutoCompleteWidget(ac_name, force_selection, view_name)
-        super(AutoCompleteField, self).__init__(*args, **kwargs)
+    def __init__(self, ac_name, reverse_label=True, view_name='autocomplete', **kwargs):
+        self.ac_name = ac_name
+        self.widget = self.widget(ac_name, True, reverse_label, view_name)
+        forms.Field.__init__(self, **kwargs)
 
-    def clean(self, value):
-        fields.Field.clean(self, value)
-        if value in fields.EMPTY_VALUES:
-            return None
+    def _get_queryset(self):
+        return autocomplete.settings[self.ac_name][0]
+    queryset = property(_get_queryset, forms.ModelChoiceField._set_queryset)
 
-        settings = autocomplete.settings[self.widget.ac_name]
-        queryset = settings[0]
-        key = settings[3]
-        try:
-            return queryset.get(**{key: value})
-        except queryset.model.DoesNotExist:
-            raise ValidationError(self.error_messages['invalid_choice'])
+    @property
+    def to_field_name(self):
+        return autocomplete.settings[self.ac_name][3]

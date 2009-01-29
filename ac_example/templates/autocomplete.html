@@ -13,7 +13,10 @@
     </style>
   </head>
   <body class="yui-skin-sam">
-    <form method="POST">
+    {% if valid %}
+    <p>The form is valid!</p>
+    {% endif %}
+    <form method="get">
       <table>
       {{ form.as_table }}
       </table>

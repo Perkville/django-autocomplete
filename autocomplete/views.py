@@ -46,4 +46,15 @@ class AutoComplete(object):
     def forbidden(self, ac_name):
         return HttpResponse(status=403)
 
+    def reverse_label(self, ac_name, key_value):
+        qs, fields, limit, key, label, auth = self.settings[ac_name]
+        if key == label:
+            return key_value
+        if isinstance(label, basestring):
+            return qs.values_list(label, flat=True).get(**{key:key_value})
+        else:
+            model = qs.get(**{key:key_value})
+            return label(model)
+
+
 autocomplete = AutoComplete()
