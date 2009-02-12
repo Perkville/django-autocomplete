@@ -29,7 +29,7 @@ class AutoCompleteWidget(widgets.Widget):
               '&2.6.0/build/connection/connection-min.js'
               '&2.6.0/build/datasource/datasource-min.js'
               '&2.6.0/build/autocomplete/autocomplete-min.js',
-              'js/autocomplete.js')
+              'js/yui_autocomplete.js')
 
     def __init__(self, ac_name, force_selection=True, reverse_label=True,
                  view_name='autocomplete', attrs=None):
