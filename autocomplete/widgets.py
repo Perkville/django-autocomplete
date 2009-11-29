@@ -32,21 +32,21 @@ class AutoCompleteWidget(widgets.Widget):
               'js/yui_autocomplete.js')
 
     def __init__(self, ac_name, force_selection=True, reverse_label=True,
-                 view_name='autocomplete', attrs=None):
+                 view=autocomplete, attrs=None):
         super(AutoCompleteWidget, self).__init__(attrs)
         self.ac_name = ac_name
         self.force_selection = bool(force_selection)
         self.reverse_label = reverse_label
-        self.view_name = view_name
+        self.view = view
     
     def render(self, name, value, attrs=None, choices=()):
-        url = reverse(self.view_name, args=[self.ac_name])
+        url = reverse(self.view, args=[self.ac_name])
         force_selection = ('false', 'true')[self.force_selection]
         if not value:
             value = hidden_value = u''
         elif self.reverse_label:
             hidden_value = force_unicode(value)
-            value = autocomplete.reverse_label(self.ac_name, value)
+            value = self.view.reverse_label(self.ac_name, value)
         else:
             value = hidden_value = force_unicode(value)
         attrs = flatatt(self.build_attrs(attrs))

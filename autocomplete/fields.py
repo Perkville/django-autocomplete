@@ -2,17 +2,24 @@ from django import forms
 from autocomplete import autocomplete, AutoCompleteWidget
 
 class ModelChoiceField(forms.ModelChoiceField):
+    """
+    A ModelChoiceField which uses an autocomplete widget, instead of an html
+    select tag, to render its choices.
+    """
     widget = AutoCompleteWidget
 
-    def __init__(self, ac_name, reverse_label=True, view_name='autocomplete', **kwargs):
+    def __init__(self, ac_name, reverse_label=True, view=autocomplete,
+                 widget=None, **kwargs):
         self.ac_name = ac_name
-        self.widget = self.widget(ac_name, True, reverse_label, view_name)
-        forms.Field.__init__(self, **kwargs)
+        self.view = view
+        if widget is None:
+            widget = self.widget(ac_name, True, reverse_label, view)
+        forms.Field.__init__(self, widget=widget, **kwargs)
 
     def _get_queryset(self):
-        return autocomplete.settings[self.ac_name][0]
+        return self.view.settings[self.ac_name][0]
     queryset = property(_get_queryset, forms.ModelChoiceField._set_queryset)
 
     @property
     def to_field_name(self):
-        return autocomplete.settings[self.ac_name][3]
+        return self.view.settings[self.ac_name][3]
