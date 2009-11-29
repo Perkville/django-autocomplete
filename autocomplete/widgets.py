@@ -10,7 +10,7 @@ AC_TEMPLATE = u'''
 <div>
   <input type="hidden" name="%(name)s" id="id_hidden_%(name)s" value="%(hidden_value)s" />
   <input type="text" id="id_%(name)s" value="%(value)s" %(attrs)s />
-  <script type="text/javascript">autocomplete("%(name)s", "%(url)s", %(force_selection)s);</script>
+  <script type="text/javascript">var ac_%(name)s = new autocomplete("%(name)s", "%(url)s", %(force_selection)s);</script>
 </div>
 '''
 
