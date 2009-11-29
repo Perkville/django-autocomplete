@@ -37,7 +37,8 @@ class AutoComplete(object):
         return HttpResponse(simplejson.dumps(result),
                 mimetype='application/json')
 
-    def register(self, id, queryset, fields, limit=None, key='pk', label=lambda obj: smart_unicode(obj), auth=False):
+    def register(self, id, queryset, fields, limit=None, key='pk',
+                 label=lambda obj: smart_unicode(obj), auth=False):
         self.settings[id] = (queryset, fields, limit, key, label, auth)
 
     def not_found(self, ac_name):
@@ -51,10 +52,14 @@ class AutoComplete(object):
         if key == label:
             return key_value
         if isinstance(label, basestring):
-            return qs.values_list(label, flat=True).get(**{key:key_value})
-        else:
-            model = qs.get(**{key:key_value})
-            return label(model)
+            qs = qs.values_list(label, flat=True)
+        try:
+            result = qs.get(**{key:key_value})
+        except qs.model.DoesNotExist:
+            return key_value
+        if not callable(label):
+            return result
+        return label(result)
 
 
 autocomplete = AutoComplete()
