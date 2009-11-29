@@ -48,7 +48,7 @@ class AutoCompleteWidget(widgets.Widget):
             hidden_value = force_unicode(value)
             value = autocomplete.reverse_label(self.ac_name, value)
         else:
-            value = force_unicode(value)
+            value = hidden_value = force_unicode(value)
         attrs = flatatt(self.build_attrs(attrs))
         return mark_safe(self.AC_TEMPLATE % locals())
 
