@@ -10,12 +10,12 @@ class AutoComplete(object):
         self.settings = dict()
 
     def __call__(self, request, ac_name, query_param='query'):
-        if not self.settings.get(ac_name):
-            return self.not_found(ac_name)
+        if not ac_name in self.settings:
+            return self.not_found(request, ac_name)
 
         qs, fields, limit, key, label, auth = self.settings[ac_name]
         if auth and not request.user.is_authenticated():
-            return self.forbidden(ac_name)
+            return self.forbidden(request, ac_name)
         query = request.GET.get(query_param, '')
         
         filter = Q()
@@ -41,10 +41,10 @@ class AutoComplete(object):
                  label=lambda obj: smart_unicode(obj), auth=False):
         self.settings[id] = (queryset, fields, limit, key, label, auth)
 
-    def not_found(self, ac_name):
+    def not_found(self, request, ac_name):
         return HttpResponse(status=404)
 
-    def forbidden(self, ac_name):
+    def forbidden(self, request, ac_name):
         return HttpResponse(status=403)
 
     def reverse_label(self, ac_name, key_value):
