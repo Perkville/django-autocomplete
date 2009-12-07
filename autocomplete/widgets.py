@@ -39,7 +39,7 @@ class AutoCompleteWidget(widgets.Widget):
         self.reverse_label = reverse_label
         self.view = view
     
-    def render(self, name, value, attrs=None, choices=()):
+    def render(self, name, value, attrs=None):
         url = reverse(self.view, args=[self.ac_name])
         force_selection = ('false', 'true')[self.force_selection]
         if not value:
