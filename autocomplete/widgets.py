@@ -10,7 +10,7 @@ AC_TEMPLATE = u'''
 <div>
   <input type="hidden" name="%(name)s" id="id_hidden_%(name)s" value="%(hidden_value)s" />
   <input type="text" id="id_%(name)s" value="%(value)s" %(attrs)s />
-  <script type="text/javascript">var ac_%(name)s = new autocomplete("%(name)s", "%(url)s", %(force_selection)s);</script>
+  <script type="text/javascript">var %(var_name)s = new autocomplete("%(name)s", "%(url)s", %(force_selection)s);</script>
 </div>
 '''
 
@@ -40,6 +40,7 @@ class AutoCompleteWidget(widgets.Widget):
         self.view = view
     
     def render(self, name, value, attrs=None):
+        var_name = 'ac_%s' % name.replace('-', '_')
         url = reverse(self.view, args=[self.ac_name])
         force_selection = ('false', 'true')[self.force_selection]
         if not value:
