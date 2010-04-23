@@ -11,7 +11,7 @@
     Instead of displaying all the choices at once, the
     :class:`AutoCompleteWidget` requires
     the user to start typing some characters and then gathers, using javascript,
-    the choices matching the user input from a remote :class:`~autocomplete.views.AutoCompleteView`.
+    the choices matching the user input from a remote :class:`~autocomplete.views.AutoComplete` view.
     
     Performing smaller queries, instead of a single enormous one to get all the
     choices at once, significantly reduces the load of the database. Moreover
@@ -20,10 +20,10 @@
 
     To make an :class:`AutoCompleteWidget` work you need to:
      * serve the javascript that will render the choices to the user;
-     * add an :class:`~autocomplete.views.AutoCompleteView` to your URLConf so
+     * add an :class:`~autocomplete.views.AutoComplete` view to your URLConf so
        the javascript can collect the choices to display;
      * define one or more *choices-sets* for the
-       :class:`~autocomplete.views.AutoCompleteView` to render.
+       :class:`~autocomplete.views.AutoComplete` view to render.
 
     .. note::
         

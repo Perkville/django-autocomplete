@@ -4,9 +4,9 @@
 .. module:: autocomplete.views
 
 
-.. class:: AutoCompleteView
+.. class:: AutoComplete
 
-    The AutoCompleteView is called by an Ajax request when the user starts typing
+    The AutoComplete view is called by an Ajax request when the user starts typing
     [#]_ and returns a set of options, matching the user input, for the requested
     choices-set. The output is encoded as JSON (``mimetype='application/json'``) and
     consists of a list of *key-label* pairs::
@@ -17,7 +17,7 @@
         # JSON Response:
         [[9, "Strawberry"], [10, "Cherry"], [11, "Apple"]]
 
-    Since the AutoCompleteView is a class you can subclass it to customize its
+    Since the AutoComplete view is a class you can subclass it to customize its
     behaviour. However a simple instance (:obj:`autocomplete.views.autocomplete`)
     is made available, and it's used for the default value of the *view* argument in
     :class:`~autocomplete.widgets.AutoCompleteWidget` and
@@ -31,7 +31,7 @@
 
     .. method:: __call__(request, ac_name[, query_param])
         
-        This method makes AutoCompleteView's instances callable and thus usable
+        This method makes AutoComplete's instances callable and thus usable
         as views.
 
         The optional argument *query_param* is the name of the GET parameter
@@ -67,7 +67,7 @@
     .. method:: register(id, queryset, fields[, limit[, key[, label[, auth]]]])
         
         This method is used to register a new choices-set with this instance of
-        AutoCompleteView.
+        AutoComplete.
 
         The method accepts as paramter:
 
@@ -79,7 +79,7 @@
 
             .. note::
                 
-                AutoCompleteView is only able to work with querysets and not with
+                AutoComplete is only able to work with querysets and not with
                 normal *hardcoded* choices, as widgets.Select does.
 
          *fields*
@@ -120,17 +120,17 @@
 
 .. data:: autocomplete
 
-    This is the AutoCompleteView used by default. It's an instance of
-    :class:`~autocomplete.views.AutoCompleteView`. If you want to customize
+    This is the AutoComplete view used by default. It's an instance of
+    :class:`~autocomplete.views.AutoComplete`. If you want to customize
     your AutoComplete view, you should subclass
-    :class:`autocomplete.views.AutoCompleteView`.
+    :class:`autocomplete.views.AutoComplete`.
 
 
 Using the autocomplete view in your URLConf
 -------------------------------------------
 
 Here's an example of how to edit
-your URLConf to use the default AutoCompleteView's instance::
+your URLConf to use the default AutoComplete's instance::
 
     # your project's urls.py
     from django.conf.urls.defaults import *
@@ -141,8 +141,8 @@ your URLConf to use the default AutoCompleteView's instance::
         url(r'^autocomplete/(\w+)/$', autocomplete),
     )
 
-Customizing the AutoCompleteView
---------------------------------
+Customizing the AutoComplete view
+---------------------------------
 
 The methods that can be overidden
 are ``not_found`` and ``forbidden``. They are called respectively when the requested
@@ -152,9 +152,9 @@ choices-set. Both these methods should return a HttpResponse object.
 ::
 
     from django.http import HttpResponse
-    from autocomplete.views import AutoCompleteView
+    from autocomplete.views import AutoComplete
 
-    class MyACView(AutoCompleteView):
+    class MyACView(AutoComplete):
 
         def not_found(self, request, ac_name):
             content = "choices-set %s, not found" % (ac_name,)
