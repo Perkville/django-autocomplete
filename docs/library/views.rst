@@ -12,7 +12,7 @@
     consists of a list of *key-label* pairs::
 
         # Request:
-        GET /autocomplete/fruit/?query=red
+        GET /autocomplete/fruit/?q=red
         
         # JSON Response:
         [[9, "Strawberry"], [10, "Cherry"], [11, "Apple"]]
@@ -35,13 +35,13 @@
         as views.
 
         The optional argument *query_param* is the name of the GET parameter
-        that should contain the user input. It defaults to ``'query'``.
+        that should contain the user input. It defaults to ``'q'``.
 
         If the Javascript toolkit you're using requires you to use an other
-        value (e.g. ``'q'``) you can customize this param, by passing a
+        value (e.g. ``'query'``) you can customize this param, by passing a
         ``dict`` to the autocomplete view in your URLConf::
 
-            url('^autocomplete/(\w+)$', autocomplete, dict(query_param='q')),
+            url('^autocomplete/(\w+)$', autocomplete, dict(query_param='query')),
 
 
     .. method:: not_found(request, ac_name):

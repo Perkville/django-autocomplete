@@ -9,7 +9,7 @@ class AutoComplete(object):
     def __init__(self):
         self.settings = dict()
 
-    def __call__(self, request, ac_name, query_param='query'):
+    def __call__(self, request, ac_name, query_param='q'):
         if not ac_name in self.settings:
             return self.not_found(request, ac_name)
 
