@@ -128,9 +128,9 @@ other javascript toolkit [1]_.
         """
         class Media:
             extend = False
-            css = {'all': ('js/thickbox.css',)}
+            css = {'all': ('css/thickbox.css',)}
             js = ('js/jquery.min.js',
-                'js/jquery.bigframe.min.js',
+                'js/jquery.bgiframe.min.js',
                 'js/jquery.ajaxQueue.js',
                 'js/thickbox-compressed.js',
                 'js/jquery.autocomplete.min.js',
