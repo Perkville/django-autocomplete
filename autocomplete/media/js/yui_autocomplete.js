@@ -34,15 +34,15 @@ function yui_autocomplete(name, ac_url, force_selection) {
             return "?q="+sQuery;
         };
 
-        var selected_item = {label: null, id: null};
         var hidden = document.getElementById("id_hidden_"+name);
+        this.selected_item = {label: input.value, id: hidden.value};
         autocomplete.itemSelectEvent.subscribe(function (type, args) {
-            selected_item = args[2];
-            hidden.value = selected_item.id;
+            this.selected_item = args[2];
+            hidden.value = this.selected_item.id;
         });
         form = document.getElementsByTagName("form")[0];
         YAHOO.util.Event.addListener(form, "submit", function (event, form) {
-            if (selected_item.label != input.value && !force_selection)
+            if ((!input.value) || (this.selected_item.label != input.value && !force_selection))
                 hidden.value = input.value;
         });
         this.datasource = datasource;
