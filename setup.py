@@ -48,7 +48,7 @@ for dirpath, dirnames, filenames in os.walk(autocomplete_dir):
 
 setup(
     name = 'django-autocomplete',
-    version = '0.2',
+    version = '0.3.dev',
     description = 'autocomplete utilities for django',
     author = 'Germano Gabbianelli',
     author_email = 'tyrion.mx@gmail.com',
