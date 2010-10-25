@@ -14,15 +14,18 @@ Usage Example
 Make the files under ``autocomplete/media`` accessible from
 ``settings.AUTOCOMPLETE_MEDIA_PREFIX`` (You can accomplish this by either
 linking or copying ``autocomplete/media`` in your project's media dir)::
+
     AUTOCOMPLETE_MEDIA_PREFIX = '/path/to/autocomplete/media/'
 
 Include the view in your project's URLConf::
+
     import autocomplete
     
     url('^autocomplete/', include(autocomplete.view.urls))
 
 Register a couple of ``AutocompleteSettings`` objects and start using them (for
 example in admin.py)::
+
     from django.contrib import admin
     from django.contrib.auth.models import Message
     
@@ -37,7 +40,5 @@ example in admin.py)::
         pass
     
     admin.site.register(Message, MessageAdmin)
-
-
 
 
