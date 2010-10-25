@@ -1,100 +1,129 @@
-function bassistance_autocomplete(name, ac_url, force_selection) {
-    $(document).ready(function () {
-        var input = $('#id_' + name);
-        var hidden_input = $('#id_hidden_' + name);
-        input.autocomplete(ac_url, {
-            limit: 10,
-            matchSubset: false,
-            dataType: 'json',
-            parse: function(data) {
-                var parsed = [];
-                for (var i in data) {
-                    row = {
-                        data: data[i][1]+'|'+data[i][0],
-                        value: data[i][0],
-                        result: data[i][1]
-                    };
-                    parsed[parsed.length] = row;
+(function( window, undefined ) {
+
+var $ = window.jQuery || window.django.jQuery,
+    django = window.django || {};
+
+$.widget( "ui.djangoautocomplete", {
+    options: {
+        source: "../autocomplete/$name/",
+        multiple: false,
+        force_selection: true,
+        renderItem: function( ul, item) {
+            return $( "<li></li>" )
+                .data( "item.autocomplete", item )
+                .append( $( "<a></a>" ).append( item.label ) )
+                .appendTo( ul );
+        },
+
+    },
+    _create: function() {
+        var self = this;
+        this.hidden_input = this.element.prev( "input[type=hidden]" );
+        this.name = this.hidden_input.attr( "name" );
+        this.element.autocomplete({
+            appendTo: this.element.parent(),
+            select: function( event, ui ) {
+                self.lastSelected = ui.item;
+                if ( self.options.multiple ) {
+                    if ( $.inArray( ui.item.id, self.values ) < 0 ) {
+                        $('<li></li>')
+                            .addClass( "ui-autocomplete-value" )
+                            .data( "value.autocomplete", ui.item.id )
+                            .append( ui.item.label+'<a href="#">x</a>' )
+                            .appendTo( self.values_ul );
+                        self.values.push( ui.item.id );
+                    }
+                    return false;
                 }
-                return parsed;
-            },    
-            formatItem: function(data, i, total) {
-                return data.split('|')[0];
+            },
+        }).data( "autocomplete" )._renderItem = this.options.renderItem;
+        this._initSource();
+        if ( this.options.multiple ) {
+            this._initManyToMany();
+        } else {
+            this.lastSelected = {
+                id: this.hidden_input.val(),
+                value: this.element.val(),
+            };
+        }
+        if (this.options.force_selection) {
+            this.element.focusout(function() {
+                if ( self.element.val() != self.lastSelected.value ) {
+                    self.element.val( "" );
+                }
+            });
+        }
+        this.element.closest( "form" ).submit(function() {
+            if ( self.options.multiple ) {
+                self.hidden_input.val( self.values.join(",") );
+            } else if ( self.options.force_selection ) {
+                self.hidden_input.val( self.element.val() ? self.lastSelected.id : "" );
+            } else {
+                self.hidden_input.val( self.element.val() );
             }
         });
-        input.result(function(event, data, formatted) {
-            hidden_input.val(data.split('|')[1]);
+    },
+    
+    destroy: function() {
+        this.element.autocomplete( "destroy" );
+        if ( this.options.multiple ) this.values_ul.remove();
+		$.Widget.prototype.destroy.call( this );
+    },
+
+    _setOption: function( key, value ) {
+		$.Widget.prototype._setOption.apply( this, arguments );
+        if ( key === "source" ) {
+            this._initSource();
+        }
+    },
+
+    _initSource: function() {
+        var source = typeof this.options.source === "string" ?
+            this.options.source.replace( "$name", this.hidden_input.attr("name") ) :
+            this.options.source;
+        this.element.autocomplete( "option", "source", source );
+    },
+
+    _initManyToMany: function() {
+        var self = this;
+        this.element.bind( "autocompleteclose", function( event, ui ) {
+            self.element.val( "" );
         });
-        form = $("form:first");
-        form.submit(function() {
-            if (hidden_input.val() != input.val() && !force_selection) {
-                hidden_input.val(input.val());
-            }
+        this.values = [];
+        if ( this.hidden_input.val() !== "" ) {
+            $.each(this.hidden_input.val().split( "," ), function(i, id) {
+                self.values.push( parseInt(id) );
+            });
+        }
+        this.values_ul = this.element.nextAll( "ul.ui-autocomplete-values" );
+        this.lastSelected = { id: null, value: null };
+        if ( this.values.length && this.values_ul[0] ) {
+            this.values_ul.children().each(function(i) {
+                $(this)
+                    .addClass( "ui-autocomplete-value" )
+                    .data( "value.autocomplete", self.values[i] )
+                    .append( '<a href="#">x</a>' );
+            });
+        } else {
+            this.values_ul = $( "<ul></ul>" ).insertAfter( this.element );
+        }
+        this.values_ul.addClass( "ui-autocomplete-values" );
+        $( ".ui-autocomplete-value a", this.values_ul[0] ).live( "click", function() {
+            var span = $(this).parent();
+            var id = span.data( "value.autocomplete" );
+            $.each( self.values, function (i, v) {
+                if (v === id) self.values.splice(i, 1);
+            });
+            span.remove();
         });
-    });
+    },
+});
+
+
+django.autocomplete = function (id, options) {
+    return $(id).djangoautocomplete(options);
 }
 
+window.django = django;
 
-function jquery_autocomplete(name, ac_url, force_selection) {
-
-    this.name = name;
-    this.ac_url = ac_url;
-    this.force_selection = force_selection;
-
-    this.source = function (request, response) {
-        function success(data) {
-            var parsed = [];
-            for (var i in data) {
-                parsed[parsed.length] = {
-                    id: data[i][0],
-                    value: data[i][1],
-                    label: data[i][1],
-                };
-            }
-            response(parsed);
-        };
-        $.ajax({
-            url: this.ac_url,
-            dataType: "json",
-            data: {q: request.term},
-            success: success
-        });
-    };
-
-    this.select = function (event, ui) {
-        // set the hidden input field.
-        this.last_item = ui.item;
-        this.hidden_input.val(ui.item.id);
-    };
-
-    this.close = function (event, ui) {
-        alert(ui.toSource());  
-    };
-
-    this.setup = function () {
-        this.input = $("#id_" + this.name);
-        this.hidden_input = $("#id_hidden_" + this.name);
-        this.last_item = {};
-        this.input.autocomplete({
-            // minLength: 2,
-            source: jQuery.proxy(this.source, this),
-            select: jQuery.proxy(this.select, this),
-        });
-        this.input.closest("form").submit(jQuery.proxy(function () {
-            if ((!this.input.val()) || (this.hidden_input.val() != this.input.val()
-                && !this.force_selection)) {
-                this.hidden_input.val(this.input.val());
-            }
-        }, this));
-        if (this.force_selection) {
-            this.input.focusout(jQuery.proxy(function (event) {
-                if (this.input.val() != this.last_item.value)
-                    this.input.val("");
-            }, this));
-        }
-    };
-
-    $(document).ready(jQuery.proxy(this.setup, this));
-};
-
-autocomplete = jquery_autocomplete;
+})(window);

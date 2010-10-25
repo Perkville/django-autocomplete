@@ -1,3 +1,4 @@
-from autocomplete.views import AutoComplete, autocomplete
-from autocomplete.widgets import AutoCompleteWidget
-from autocomplete.fields import ModelChoiceField
+from autocomplete.views import view, AutocompleteView, AutocompleteSettings
+from autocomplete.admin import AutocompleteAdmin
+from autocomplete.widgets import AutocompleteWidget, MultipleAutocompleteWidget
+from autocomplete.utils import autocomplete_formfield
