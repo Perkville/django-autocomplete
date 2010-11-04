@@ -149,7 +149,7 @@ class AutocompleteView(object):
     def register(self, id, settings_class=AutocompleteSettings, **options):
         id = getattr(id, 'field', id)
         if id in self.settings:
-            id = self.settings.path.replace('/', '.')
+            id = self.settings[id].path.replace('/', '.')
             raise AlreadyRegistered('%r is already registered' % id)
 
         self.settings[id] = settings = settings_class(id, self.name, **options)
