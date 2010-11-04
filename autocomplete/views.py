@@ -71,7 +71,7 @@ class AutocompleteSettings(object):
         query = request.GET.get('term', None)
 
         if query is None:
-            return self.not_found(request)
+            raise Http404
 
         if not self.has_permission(request):
             return self.forbidden(request)
@@ -111,9 +111,6 @@ class AutocompleteSettings(object):
 
     def forbidden(self, request):
         return HttpResponseForbidden()
-
-    def not_found(self, request):
-        raise Http404
 
     def get_absolute_url(self):
         return reverse('autocomplete:autocomplete', args=[
