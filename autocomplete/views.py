@@ -1,10 +1,8 @@
 import operator
 
-from django.core.exceptions import ImproperlyConfigured
 from django.core.urlresolvers import reverse
-from django.contrib.admin.validation import check_isseq
 from django.db import models
-from django.http import Http404, HttpResponse
+from django.http import Http404, HttpResponse, HttpResponseForbidden
 from django.utils import simplejson
 from django.utils.encoding import smart_str
 
@@ -60,7 +58,7 @@ class AutocompleteSettings(object):
         def build_func(attr):
             if attr in self.model._meta.get_all_field_names():
                  return lambda m: getattr(m, attr)
-            return lambda m: value % vars(m)
+            return lambda m: attr % vars(m)
 
         for name in ('value', 'label'):
             attr = getattr(self, name)
