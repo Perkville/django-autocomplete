@@ -1,7 +1,6 @@
 import operator
 
 from django.core.urlresolvers import reverse
-from django.db import models
 from django.http import Http404, HttpResponse, HttpResponseForbidden
 from django.utils import simplejson
 from django.utils.encoding import smart_str
@@ -33,11 +32,12 @@ class AutocompleteSettings(object):
         self.id = id
         self.current_app = current_app
 
-        if isinstance(id, models.Field):
+        from django.db.models.fields.related import RelatedField
+        if isinstance(id, RelatedField):
             self.field = id
             self.model = self.field.rel.to
-            opts = self.field.model._meta
-            self.path = '/'.join((opts.app_label, opts.module_name,
+            opts = self.field.related.opts
+            self.id = '.'.join((opts.app_label, opts.module_name,
                 self.field.name))
             if self.queryset is None:
                 self.queryset = self.model._default_manager.complex_filter(
@@ -46,14 +46,17 @@ class AutocompleteSettings(object):
                 self.key = self.field.rel.get_related_field().name
             if self.reverse_label is None:
                 self.reverse_label = True
-        else:
+        elif isinstance(id, (str, unicode)):
             self.field = None
             self.model = self.queryset.model
-            self.path = id.replace('.', '/')
+            self.id = id
             if self.key is None:
                 self.key = 'pk'
             if self.reverse_label is None:
                 self.reverse_label = False
+        else:
+            raise TypeError("id should be either a related field or a string: %r" % id)
+        self.path = id.replace('.', '/')
 
         def build_func(attr):
             if attr in self.model._meta.get_all_field_names():
@@ -144,7 +147,7 @@ class AutocompleteView(object):
     def register(self, id, settings_class=AutocompleteSettings, **options):
         id = getattr(id, 'field', id)
         if id in self.settings:
-            id = self.settings[id].path.replace('/', '.')
+            id = self.settings[id].id
             raise AlreadyRegistered('%r is already registered' % id)
 
         self.settings[id] = settings = settings_class(id, self.name, **options)
