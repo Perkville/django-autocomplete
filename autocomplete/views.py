@@ -20,6 +20,7 @@ class AutocompleteSettings(object):
     limit = 5
     reverse_label = None
     js_options = {}
+    login_required = False
  
     def label(self, obj):
         return unicode(obj)
@@ -107,6 +108,8 @@ class AutocompleteSettings(object):
             return "%s__icontains" % field_name
 
     def has_permission(self, request):
+        if self.login_required:
+            return request.user.is_authenticated()
         return True
 
     def forbidden(self, request):
