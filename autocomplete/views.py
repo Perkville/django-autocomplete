@@ -93,8 +93,7 @@ class AutocompleteSettings(object):
                 label = self.label(o),
             ))
         
-        # XXX set the mimetype
-        return HttpResponse(simplejson.dumps(data))
+        return HttpResponse(simplejson.dumps(data), mimetype='application/json')
 
     def _construct_search(self, field_name):
         # use different lookup methods depending on the notation
