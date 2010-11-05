@@ -1,4 +1,0 @@
-from autocomplete.views import view, AutocompleteView, AutocompleteSettings
-from autocomplete.admin import AutocompleteAdmin
-from autocomplete.widgets import AutocompleteWidget, MultipleAutocompleteWidget
-from autocomplete.utils import autocomplete_formfield

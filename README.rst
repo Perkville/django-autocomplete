@@ -19,9 +19,9 @@ linking or copying ``autocomplete/media`` in your project's media dir)::
 
 Include the view in your project's URLConf::
 
-    import autocomplete
+    from autocomplete.views import autocomplete
     
-    url('^autocomplete/', include(autocomplete.view.urls))
+    url('^autocomplete/', include(autocomplete.urls))
 
 Register a couple of ``AutocompleteSettings`` objects and start using them (for
 example in admin.py)::
@@ -29,14 +29,15 @@ example in admin.py)::
     from django.contrib import admin
     from django.contrib.auth.models import Message
     
-    import autocomplete
+    from autocomplete.views import autocomplete, AutocompleteSettings
+    from autocomplete.admin import AutocompleteAdmin
     
-    class UserAutocomplete(autocomplete.AutocompleteSettings):
+    class UserAutocomplete(AutocompleteSettings):
         search_fields = ('^username', '^email')
     
-    autocomplete.view.register(Message.user, UserAutocomplete)
+    autocomplete.register(Message.user, UserAutocomplete)
     
-    class MessageAdmin(autocomplete.AutocompleteAdmin, admin.ModelAdmin):
+    class MessageAdmin(AutocompleteAdmin, admin.ModelAdmin):
         pass
     
     admin.site.register(Message, MessageAdmin)

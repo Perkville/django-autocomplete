@@ -173,4 +173,4 @@ class AutocompleteView(object):
         return self.get_urls(), self.app_name, self.name
     urls = property(urls)
 
-view = AutocompleteView()
+autocomplete = AutocompleteView()

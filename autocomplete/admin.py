@@ -4,7 +4,7 @@ from django.conf import settings
 from django.core.urlresolvers import reverse
 
 from autocomplete import widgets
-from autocomplete.views import view as default_view
+from autocomplete.views import autocomplete as default_view
 from autocomplete.utils import autocomplete_formfield
 
 
