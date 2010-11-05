@@ -1,4 +1,5 @@
 from django import forms
+from django.forms.models import modelform_factory
 from django.db import models
 
 from autocomplete import widgets
@@ -27,6 +28,10 @@ def autocomplete_formfield(ac_id, formfield=None, view=default_view,
     kwargs.pop('request', None) # request can be passed by contrib.admin
     db = kwargs.get('using')
     settings = view.get_settings(ac_id)
+    if widget_class is None:
+        widget_class = widgets.AutocompleteWidget
+    if multiple_widget_class is None:
+        multiple_widget_class = widgets.MultipleAutocompleteWidget
 
     if formfield is None:
         formfield = getattr(settings.field, 'formfield', forms.CharField)
@@ -45,5 +50,25 @@ def autocomplete_formfield(ac_id, formfield=None, view=default_view,
     return formfield(**kwargs)
 
 
-def autocompleteform_factory():
-    """Implement me!"""
+def _formfield_callback(autocomplete_fields, **ac_options):
+    view = ac_options.get('view', default_view)
+
+    def autocomplete_callback(field, **kwargs):
+        kwargs = dict(ac_options, **kwargs)
+        if field.name in autocomplete_fields:
+            ac_id = autocomplete_fields[field.name]
+            return autocomplete_formfield(ac_id, **kwargs)
+        elif view.has_settings(field):
+            return autocomplete_formfield(field, **kwargs)
+        return field.formfield(**kwargs)
+    return autocomplete_callback
+
+
+def autocompleteform_factory(model, autocomplete_fields={},
+        form=forms.ModelForm, fields=None, exclude=None, **ac_options):
+    """
+    autocompleteform_factory(MyModel, {'friends':'myapp.friends'})
+    """
+    # XXX maybe we should make formfield_callback customizable
+    callback = _formfield_callback(autocomplete_fields, **ac_options)
+    return modelform_factory(model, form, fields, exclude, callback)
