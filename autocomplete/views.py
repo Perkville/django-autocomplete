@@ -1,5 +1,6 @@
 import operator
 
+from django.db import models
 from django.core.urlresolvers import reverse
 from django.http import Http404, HttpResponse, HttpResponseForbidden
 from django.utils import simplejson
@@ -57,7 +58,7 @@ class AutocompleteSettings(object):
                 self.reverse_label = False
         else:
             raise TypeError("id should be either a related field or a string: %r" % id)
-        self.path = id.replace('.', '/')
+        self.path = self.id.replace('.', '/')
 
         def build_func(attr):
             if attr in self.model._meta.get_all_field_names():
