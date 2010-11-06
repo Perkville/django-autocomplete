@@ -1,0 +1,9 @@
+include LICENSE
+include README.rst
+include MANIFEST.in
+include tests/bootstrap.py
+include tests/buildout.cfg
+recursive-include autocomplete/media *
+recursive-include docs *
+recursive-include tests/test_project *.py
+recursive-include tests/test_project/templates *
