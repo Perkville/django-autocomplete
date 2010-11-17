@@ -78,6 +78,7 @@ class MultipleAutocompleteWidget(AutocompleteWidget):
             initial_objects = self.initial_objects(value)
             value = ','.join([str(v) for v in value])
         else:
+            value = None
             initial_objects = u''
         return super(MultipleAutocompleteWidget, self).render(
             name, value, attrs, hattrs, initial_objects)
