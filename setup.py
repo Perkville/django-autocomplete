@@ -3,7 +3,7 @@ import autocomplete
 
 setup(
     name = 'django-autocomplete',
-    version = autocomplete.__version__,
+    version = autocomplete.get_version(installed=False),
     description = 'autocomplete utilities for django',
     author = 'Germano Gabbianelli',
     author_email = 'tyrion.mx@gmail.com',
