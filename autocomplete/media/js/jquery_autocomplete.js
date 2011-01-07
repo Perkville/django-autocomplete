@@ -13,7 +13,7 @@ $.widget( "ui.djangoautocomplete", {
                 .data( "item.autocomplete", item )
                 .append( $( "<a></a>" ).append( item.label ) )
                 .appendTo( ul );
-        },
+        }
 
     },
     _create: function() {
@@ -35,7 +35,7 @@ $.widget( "ui.djangoautocomplete", {
                     }
                     return false;
                 }
-            },
+            }
         }).data( "autocomplete" )._renderItem = this.options.renderItem;
         this._initSource();
         if ( this.options.multiple ) {
@@ -43,7 +43,7 @@ $.widget( "ui.djangoautocomplete", {
         } else {
             this.lastSelected = {
                 id: this.hidden_input.val(),
-                value: this.element.val(),
+                value: this.element.val()
             };
         }
         if (this.options.force_selection) {
@@ -66,7 +66,9 @@ $.widget( "ui.djangoautocomplete", {
     
     destroy: function() {
         this.element.autocomplete( "destroy" );
-        if ( this.options.multiple ) this.values_ul.remove();
+        if ( this.options.multiple ) {
+            this.values_ul.remove();
+        }
 		$.Widget.prototype.destroy.call( this );
     },
 
@@ -92,7 +94,7 @@ $.widget( "ui.djangoautocomplete", {
         this.values = [];
         if ( this.hidden_input.val() !== "" ) {
             $.each(this.hidden_input.val().split( "," ), function(i, id) {
-                self.values.push( parseInt(id) );
+                self.values.push( parseInt(id, 10) );
             });
         }
         this.values_ul = this.element.nextAll( "ul.ui-autocomplete-values" );
@@ -112,17 +114,19 @@ $.widget( "ui.djangoautocomplete", {
             var span = $(this).parent();
             var id = span.data( "value.autocomplete" );
             $.each( self.values, function (i, v) {
-                if (v === id) self.values.splice(i, 1);
+                if (v === id) {
+                    self.values.splice(i, 1);
+                }
             });
             span.remove();
         });
-    },
+    }
 });
 
 
 django.autocomplete = function (id, options) {
     return $(id).djangoautocomplete(options);
-}
+};
 
 window.django = django;
 
