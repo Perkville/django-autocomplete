@@ -54,12 +54,12 @@ def _formfield_callback(autocomplete_fields, **ac_options):
     view = ac_options.get('view', default_view)
 
     def autocomplete_callback(field, **kwargs):
-        kwargs = dict(ac_options, **kwargs)
+        acargs = dict(ac_options, **kwargs)
         if field.name in autocomplete_fields:
             ac_id = autocomplete_fields[field.name]
-            return autocomplete_formfield(ac_id, **kwargs)
+            return autocomplete_formfield(ac_id, field.formfield, **acargs)
         elif view.has_settings(field):
-            return autocomplete_formfield(field, **kwargs)
+            return autocomplete_formfield(field, **acargs)
         return field.formfield(**kwargs)
     return autocomplete_callback
 
