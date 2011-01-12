@@ -1,6 +1,13 @@
 # -*- coding: utf-8 -*-
 from unittest import TestCase
 from django.test import TestCase as DjangoTestCase
+from django import forms
+
+from autocomplete import widgets, utils
+
+from test_project.testapp import widgets as custom_widgets
+from test_project.testapp.views import autocomplete
+from test_project.testapp.models import Dummy
 
 # TODO:
 # test decorated view Settings.view
@@ -86,3 +93,59 @@ class AutocompleteViewTests(DjangoTestCase):
         self.assertContains(response, 'gary')
         self.assertNotContains(response, 'gayle')
         self.assertNotContains(response, r'gl\u00ea\u00f1')
+
+
+class AutocompleteFormfieldTests(DjangoTestCase):
+
+    def setUp(self):
+        import test_project.testapp.autocomplete_settings
+    
+    def assertIsInstance(self, obj, cls):
+        """Same as self.assertTrue(isinstance(obj, cls)), with a nicer
+           default message."""
+        if not isinstance(obj, cls):
+            standardMsg = '%r is not an instance of %r' % (obj, cls)
+            self.fail(standardMsg)
+
+    def test_inexistent_settings(self):
+        self.assertRaises(KeyError, utils.autocomplete_formfield,
+            'testapp.simple')
+
+    def test_default_values(self):
+        formfield = utils.autocomplete_formfield(Dummy.user2,
+            view=autocomplete)
+        self.assertIsInstance(formfield, forms.ModelChoiceField)
+        self.assertIsInstance(formfield.widget, widgets.AutocompleteWidget)
+        
+        formfield = utils.autocomplete_formfield(Dummy.friends,
+            view=autocomplete)
+        self.assertIsInstance(formfield, forms.ModelMultipleChoiceField)
+        self.assertIsInstance(formfield.widget, widgets.MultipleAutocompleteWidget)
+
+        formfield = utils.autocomplete_formfield('testapp.customrender',
+            view=autocomplete)
+        self.assertIsInstance(formfield, forms.CharField)
+        self.assertIsInstance(formfield.widget, widgets.AutocompleteWidget)
+
+        formfield = utils.autocomplete_formfield('testapp.email',
+            view=autocomplete)
+        self.assertIsInstance(formfield, forms.CharField)
+        self.assertIsInstance(formfield.widget, widgets.AutocompleteWidget)
+
+    def test_custom_widgets(self):
+        formfield = utils.autocomplete_formfield('testapp.simple',
+            widget_class=custom_widgets.CustomAutocompleteWidget,
+            view=autocomplete)
+        self.assertIsInstance(formfield.widget,
+            custom_widgets.CustomAutocompleteWidget)
+
+        formfield = utils.autocomplete_formfield(Dummy.friends,
+            multiple_widget_class=custom_widgets.CustomMultipleAutocompleteWidget,
+            view=autocomplete)
+        self.assertIsInstance(formfield.widget,
+            custom_widgets.CustomMultipleAutocompleteWidget)
+
+    def test_custom_formfield(self):
+        formfield = utils.autocomplete_formfield('testapp.email', forms.EmailField,
+            view=autocomplete)
+        self.assertIsInstance(formfield, forms.EmailField)

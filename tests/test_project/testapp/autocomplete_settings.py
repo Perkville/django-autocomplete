@@ -39,10 +39,22 @@ class LimitAutocomplete(SimpleAutocomplete):
 class User2Autocomplete(SimpleAutocomplete):
     queryset = None
 
+class FriendsAutocomplete(AutocompleteSettings):
+    search_fields = ('^username',)
+
+class EmailAutocomplete(AutocompleteSettings):
+    queryset = User.objects.all()
+    search_fields = ('^email', '^username')
+    key = value = 'email'
+
+    def label(self, u):
+        return u'%s %s \u003C%s\u003E' % (u.first_name, u.last_name, u.email)
+
 autocomplete.register('testapp.simple', SimpleAutocomplete)
 autocomplete.register('testapp.loginreq', LoginRequiredAutocomplete)
 autocomplete.register('testapp.hasperm', HasPermAutocomplete)
 autocomplete.register('testapp.customrender', CustomRenderingAutocomplete)
 autocomplete.register(Dummy.user2, User2Autocomplete)
 autocomplete.register('testapp.limit', LimitAutocomplete)
-
+autocomplete.register(Dummy.friends, FriendsAutocomplete)
+autocomplete.register('testapp.email', EmailAutocomplete)
