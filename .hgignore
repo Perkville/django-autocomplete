@@ -4,9 +4,4 @@ syntax:glob
 .*.swp
 .installed.cfg
 docs/_build
-tests/bin
-tests/develop-eggs
-tests/dist
-tests/downloads
-tests/eggs
-tests/parts
+.tox

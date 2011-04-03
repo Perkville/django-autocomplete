@@ -28,7 +28,6 @@ INSTALLED_APPS = (
 
 ADMIN_MEDIA_PREFIX = '/media/admin/'
 AUTOCOMPLETE_MEDIA_PREFIX = '/media/autocomplete/'
-DEFAULT_CHARSET = 'utf-8'
 
 TEMPLATE_DIRS = (
     os.path.join(PROJECT_DIR, 'templates'),
