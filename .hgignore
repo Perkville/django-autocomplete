@@ -5,3 +5,4 @@ syntax:glob
 .installed.cfg
 docs/_build
 .tox
+.DS_Store
