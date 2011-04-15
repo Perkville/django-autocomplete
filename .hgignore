@@ -6,3 +6,6 @@ syntax:glob
 docs/_build
 .tox
 .DS_Store
+
+syntax: glob
+.*
