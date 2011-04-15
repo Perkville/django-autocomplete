@@ -9,3 +9,5 @@ docs/_build
 
 syntax: glob
 .*
+syntax: regexp
+^django_autocomplete\.egg-info$
