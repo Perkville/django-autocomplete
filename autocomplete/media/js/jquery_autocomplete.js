@@ -8,6 +8,7 @@ $.widget( "ui.djangoautocomplete", {
         source: "../autocomplete/$name/",
         multiple: false,
         force_selection: true,
+        autoFocus: true,
         renderItem: function( ul, item) {
             return $( "<li></li>" )
                 .data( "item.autocomplete", item )
@@ -22,6 +23,8 @@ $.widget( "ui.djangoautocomplete", {
         this.name = this.hidden_input.attr( "name" );
         this.element.autocomplete({
             appendTo: this.element.parent(),
+			// Add SelectFirst, need jquery.ui >= 1.8.11
+			autoFocus: this.options.autoFocus,
             select: function( event, ui ) {
                 self.lastSelected = ui.item;
                 if ( self.options.multiple ) {

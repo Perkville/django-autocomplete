@@ -20,17 +20,25 @@ class AutocompleteSettings(object):
     search_fields = []
     limit = 5
     reverse_label = None
-    js_options = {}
     login_required = False
- 
+    js_options = {}
+
+    # Javascript settings
+    auto_focus = True
+
     def label(self, obj):
         return unicode(obj)
     value = label
-   
+
 
     def __init__(self, id, current_app, **kwargs):
         for (k, v) in kwargs.items():
             setattr(self, k, v)
+        # Set JS options from class attributes (and indirectly from kwargs).
+        self.js_options = {
+                     'autoFocus': self.auto_focus,
+                     }
+
         self.id = id
         self.current_app = current_app
 
@@ -86,15 +94,15 @@ class AutocompleteSettings(object):
                     for field_name in self.search_fields]
 
             queryset = queryset.filter(reduce(operator.or_, or_queries))
-        
+
         data = []
         for o in queryset[:self.limit]:
             data.append(dict(
-                id = getattr(o, self.key),
-                value = self.value(o),
-                label = self.label(o),
+                id=getattr(o, self.key),
+                value=self.value(o),
+                label=self.label(o),
             ))
-        
+
         return HttpResponse(simplejson.dumps(data), mimetype='application/json')
 
     def _construct_search(self, field_name):
@@ -174,3 +182,4 @@ class AutocompleteView(object):
     urls = property(urls)
 
 autocomplete = AutocompleteView()
+
