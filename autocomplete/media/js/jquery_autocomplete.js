@@ -8,6 +8,7 @@ $.widget( "ui.djangoautocomplete", {
         source: "../autocomplete/$name/",
         multiple: false,
         force_selection: true,
+        zebra: true,
         autoFocus: true,
         minLength: 1,
         renderItem: function( ul, item) {
@@ -27,6 +28,14 @@ $.widget( "ui.djangoautocomplete", {
 			// Add SelectFirst, need jquery.ui >= 1.8.11
 			autoFocus: this.options.autoFocus,
 			minLength: this.options.minLength,
+			// Add Zebra
+			open: function( event, ui ) {
+              if (self.options.zebra) {
+                  $(this).autocomplete("widget").find("ui-menu-item-alternate")
+                  .removeClass("ui-menu-item-alternate").end()
+                  .find("li.ui-menu-item:odd a").addClass("ui-menu-item-alternate");
+              }
+	        },
             select: function( event, ui ) {
                 self.lastSelected = ui.item;
                 if ( self.options.multiple ) {

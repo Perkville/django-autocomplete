@@ -26,6 +26,7 @@ class AutocompleteSettings(object):
     # Javascript settings
     auto_focus = True
     min_length = 1
+    zebra = True
 
     def label(self, obj):
         return unicode(obj)
@@ -38,7 +39,8 @@ class AutocompleteSettings(object):
         # Set JS options from class attributes (and indirectly from kwargs).
         self.js_options = {
                      'autoFocus': self.auto_focus,
-                     'minLength': self.min_length
+                     'minLength': self.min_length,
+                     'zebra': self.zebra
                      }
 
         self.id = id

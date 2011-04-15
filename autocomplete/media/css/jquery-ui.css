@@ -363,3 +363,8 @@ body.change-form .ui-autocomplete-values .ui-autocomplete-value {
 body.change-form .ui-autocomplete-values .ui-autocomplete-value a {
     float: right;
 }
+
+/* Zebra */
+.ui-autocomplete a.ui-menu-item-alternate {
+    background-color: #EDF3FE;  /* alternate item bgcolor */
+}
