@@ -27,6 +27,7 @@ class AutocompleteSettings(object):
     auto_focus = True
     min_length = 1
     zebra = True
+    cache = True
 
     def label(self, obj):
         return unicode(obj)
@@ -40,7 +41,8 @@ class AutocompleteSettings(object):
         self.js_options = {
                      'autoFocus': self.auto_focus,
                      'minLength': self.min_length,
-                     'zebra': self.zebra
+                     'zebra': self.zebra,
+                     'cache': self.cache
                      }
 
         self.id = id
@@ -74,7 +76,7 @@ class AutocompleteSettings(object):
 
         def build_func(attr):
             if attr in self.model._meta.get_all_field_names():
-                 return lambda m: getattr(m, attr)
+                return lambda m: getattr(m, attr)
             return lambda m: attr % vars(m)
 
         for name in ('value', 'label'):

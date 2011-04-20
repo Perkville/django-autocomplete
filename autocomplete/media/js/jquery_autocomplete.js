@@ -11,6 +11,7 @@ $.widget( "ui.djangoautocomplete", {
         zebra: true,
         autoFocus: true,
         minLength: 1,
+        cache: true,
         renderItem: function( ul, item) {
             return $( "<li></li>" )
                 .data( "item.autocomplete", item )
@@ -23,11 +24,28 @@ $.widget( "ui.djangoautocomplete", {
         var self = this;
         this.hidden_input = this.element.prev( "input[type=hidden]" );
         this.name = this.hidden_input.attr( "name" );
+ 		var queryCache = {};
+		var	lastXhr;
         this.element.autocomplete({
             appendTo: this.element.parent(),
 			// Add SelectFirst, need jquery.ui >= 1.8.11
 			autoFocus: this.options.autoFocus,
 			minLength: this.options.minLength,
+            source: function(request, response) {
+                var term = request.term;
+				if ( self.options.cache && term in queryCache ) {
+					response( queryCache[ term ] );
+					return;
+				}
+				lastXhr = $.getJSON( this.options.sourceURL,
+                                    {term: term},
+                                    function( data, status, xhr ) {
+					if ( xhr === lastXhr ) {
+    					queryCache[ term ] = data;
+    					response( data );
+					}
+				});
+            },
 			// Add Zebra
 			open: function( event, ui ) {
               if (self.options.zebra) {
@@ -97,7 +115,7 @@ $.widget( "ui.djangoautocomplete", {
         var source = typeof this.options.source === "string" ?
             this.options.source.replace( "$name", this.hidden_input.attr("name") ) :
             this.options.source;
-        this.element.autocomplete( "option", "source", source );
+        this.element.autocomplete( "option", "sourceURL", source );
     },
 
     _initManyToMany: function() {
