@@ -151,6 +151,7 @@ $.widget( "ui.djangoautocomplete", {
                 }
             });
             span.remove();
+            return false;
         });
     }
 });
