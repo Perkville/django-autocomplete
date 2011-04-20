@@ -352,8 +352,9 @@ body.change-form form ul.ui-autocomplete {
     padding: 0;
     /* add scrolling */
     max-height: 125px;
-    overflow-y: auto;
+    overflow: auto;
     overflow-x: hidden;    
+    overflow-y: auto;
     /* drop shadow */
     -moz-box-shadow: 0px 5px 10px #999999;
     -webkit-box-shadow: 0px 5px 10px #999999;
@@ -384,14 +385,38 @@ body.change-form .ui-autocomplete .ui-menu-item a.ui-state-hover {
 	margin: 0;
 }
 
-body.change-form .ui-autocomplete-values .ui-autocomplete-value {
-    width: 200px;
-}
 body.change-form .ui-autocomplete-values .ui-autocomplete-value a {
     float: right;
 }
 
+/* M2M */
+body.change-form ul.ui-autocomplete-values li {
+    list-style: none;
+    margin: 0;
+    padding: 2px 4px;
+    background-color: #FFFFFF;
+}
+
+body.change-form .ui-autocomplete-values {
+    border: 1px solid #CCCCCC;
+    background-color: #F5F5F5;
+    width: 270px;
+    min-height: 18px;
+    max-height: 200px;
+    overflow: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding: 0;
+}
+
+body.change-form .ui-autocomplete-values .ui-autocomplete-value a {
+    margin: 0 11px;
+    color: #CC0000;
+    font-weight: bold;
+}
+
 /* Zebra */
-.ui-autocomplete a.ui-menu-item-alternate {
+body.change-form .ui-autocomplete a.ui-menu-item-alternate,
+body.change-form ul.ui-autocomplete-values li.ui-menu-item-alternate {
     background-color: #EDF3FE;  /* alternate item bgcolor */
 }

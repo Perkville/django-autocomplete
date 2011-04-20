@@ -61,8 +61,9 @@ $.widget( "ui.djangoautocomplete", {
                         $('<li></li>')
                             .addClass( "ui-autocomplete-value" )
                             .data( "value.autocomplete", ui.item.id )
-                            .append( ui.item.label+'<a href="#">x</a>' )
+                            .append( '<a href="#">x</a>' + ui.item.value )
                             .appendTo( self.values_ul );
+                        self._addZebra(self.values_ul);
                         self.values.push( ui.item.id );
                     }
                     return false;
@@ -118,6 +119,12 @@ $.widget( "ui.djangoautocomplete", {
         this.element.autocomplete( "option", "sourceURL", source );
     },
 
+    _addZebra: function(elem) {
+        elem.find("li.ui-menu-item-alternate")
+        .removeClass("ui-menu-item-alternate").end()
+        .find("li.ui-autocomplete-value:odd").addClass("ui-menu-item-alternate");
+    },
+
     _initManyToMany: function() {
         var self = this;
         this.element.bind( "autocompleteclose", function( event, ui ) {
@@ -136,12 +143,13 @@ $.widget( "ui.djangoautocomplete", {
                 $(this)
                     .addClass( "ui-autocomplete-value" )
                     .data( "value.autocomplete", self.values[i] )
-                    .append( '<a href="#">x</a>' );
+                    .prepend( '<a href="#">x</a>' );
             });
         } else {
             this.values_ul = $( "<ul></ul>" ).insertAfter( this.element );
         }
         this.values_ul.addClass( "ui-autocomplete-values" );
+        this._addZebra(this.values_ul);
         $( ".ui-autocomplete-value a", this.values_ul[0] ).live( "click", function() {
             var span = $(this).parent();
             var id = span.data( "value.autocomplete" );
@@ -151,6 +159,7 @@ $.widget( "ui.djangoautocomplete", {
                 }
             });
             span.remove();
+            self._addZebra(self.values_ul);
             return false;
         });
     }
