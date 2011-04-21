@@ -27,6 +27,31 @@ $.widget( "ui.djangoautocomplete", {
         this.name = this.hidden_input.attr( "name" );
  		var queryCache = {};
 		var	lastXhr;
+        var accents = {
+            "àåáâäãåą": "a",
+            "èéêëę": "e",
+            "ìíîïı": "i",
+            "òóôõöøő": "o",
+            "ùúûü": "u",
+            "çćč": "c",
+            "żźž": "z",
+            "śşš": "s",
+            "ñń": "n",
+            "ýŸ": "y",
+            "ł": "l",
+            "đ": "d",
+            "ğ": "g",
+        };
+        function convertEntities(val) {
+            return $('<div/>').html(val).html();
+        }
+        function stripAccents(term) {
+            term = convertEntities(term).toLowerCase();
+            $.each(accents, function(accent) {
+                term = term.replace(new RegExp("[" + accent + "]", "g"), accents[accent])
+            });
+            return term;
+        }
         this.element.autocomplete({
             appendTo: this.element.parent(),
 			// Add SelectFirst, need jquery.ui >= 1.8.11
@@ -45,16 +70,17 @@ $.widget( "ui.djangoautocomplete", {
                         if (self.options.highlight) {
                             $.each(data, function(idx, result){
                                 if (term) {
-                                    var label = result.label;
+                                    var label = stripAccents(result.label);
+                                    var stripTerm = stripAccents(term);
                                     var parts = label.split(new RegExp("(?!<[^<>]*)(" +
-                                        $.ui.autocomplete.escapeRegex(term) +
+                                        $.ui.autocomplete.escapeRegex(stripTerm) +
                                         ")(?![^<>]*>)", "gi"));
                                     if (parts.length > 1) {
                                         label = [];
                                         var pos = 0;
                                         for (var i=0; i<parts.length; i++) {
                                             var part = parts[i];
-                                            if (part === term) {
+                                            if (part === stripTerm) {
                                                 label.push("<strong>" + result.label.substring(pos, pos + part.length) + "</strong>");                                                
                                             } else {
                                                 label.push(result.label.substring(pos, pos + part.length));                                                
