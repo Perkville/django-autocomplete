@@ -40,7 +40,7 @@ class AutocompleteWidget(forms.Widget):
 
         classes = {}
         lookup = ''
-        if self.settings.field.rel:
+        if self.settings.field and self.settings.field.rel:
             if self.js_options['multiple']:
                 classes['class'] = 'vManyToManyRawIdAdminField'
             hidden_id = attrs.pop('id', 'id_%s' % name)
