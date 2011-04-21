@@ -52,7 +52,8 @@ class AutocompleteAdmin(object):
             elif can_add_related:
                 formfield.widget = admin.widgets.RelatedFieldWidgetWrapper(
                     formfield.widget, ac_id.rel, self.admin_site)
-        self._set_help_text(ac_id, formfield)
+        if not isinstance(ac_id, basestring):
+            self._set_help_text(ac_id, formfield)
         return formfield
 
     def formfield_for_dbfield(self, db_field, **kwargs):
