@@ -19,6 +19,7 @@ class AutocompleteSettings(object):
     queryset = key = None
     search_fields = []
     limit = 5
+    lookup = True
     add_button = True
     reverse_label = None
     login_required = False

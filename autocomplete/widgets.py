@@ -2,6 +2,7 @@ from django import forms
 from django.forms.util import flatatt
 from django.utils import simplejson
 from django.utils.safestring import mark_safe
+from django.utils.translation import ugettext as _
 from django.conf import settings
 
 from autocomplete.views import autocomplete as default_view
@@ -38,11 +39,25 @@ class AutocompleteWidget(forms.Widget):
             value = ''
 
         classes = {}
+        lookup = ''
         if self.settings.field.rel:
             if self.js_options['multiple']:
                 classes['class'] = 'vManyToManyRawIdAdminField'
             hidden_id = attrs.pop('id', 'id_%s' % name)
             attrs['id'] = 'id_ac_%s' % name
+
+            if self.settings.lookup:
+                related_url = '../../../%s/%s/' % (self.settings.field.rel.to._meta.app_label, self.settings.field.rel.to._meta.object_name.lower())
+                params = self.url_parameters()
+                if params:
+                    url = '?' + '&amp;'.join(['%s=%s' % (k, v) for k, v in params.items()])
+                else:
+                    url = ''
+                lookup = (u'<a href="%s%s" class="related-lookup" id="lookup_id_%s" '
+                          u'onclick="return showRelatedObjectLookupPopup(this);"> '
+                          u'<img src="%simg/admin/selector-search.gif" width="16" height="16" alt="%s" />'
+                          u'</a>' % (related_url, url, name, settings.ADMIN_MEDIA_PREFIX, _('Lookup')))
+        
         else:
             hidden_id = 'id_hidden_%s' % name
         hidden_attrs = self.build_attrs(classes, type='hidden', name=name, value=value, id=hidden_id)
@@ -58,11 +73,31 @@ class AutocompleteWidget(forms.Widget):
         return mark_safe(u''.join((
             u'<input%s />\n' % flatatt(hidden_attrs),
             u'<input%s />\n' % flatatt(normal_attrs),
+            lookup,
             initial_objects,
             u'<script type="text/javascript">',
             u'django.autocomplete("#%s", %s);' % (attrs['id'], options),
             u'</script>\n',
         )))
+
+    def base_url_parameters(self):
+        params = {}
+        if self.settings.field.rel.limit_choices_to and hasattr(self.settings.field.rel.limit_choices_to, 'items'):
+            items = []
+            for k, v in self.settings.field.rel.limit_choices_to.items():
+                if isinstance(v, list):
+                    v = ','.join([str(x) for x in v])
+                else:
+                    v = str(v)
+                items.append((k, v))
+            params.update(dict(items))
+        return params
+
+    def url_parameters(self):
+        from django.contrib.admin.views.main import TO_FIELD_VAR
+        params = self.base_url_parameters()
+        params.update({TO_FIELD_VAR: self.settings.field.rel.get_related_field().name})
+        return params
 
     def label_for_value(self, value):
         # XXX MultipleObjectsReturned could be raised if the field is not unique.
@@ -90,6 +125,9 @@ class MultipleAutocompleteWidget(AutocompleteWidget):
             initial_objects = u''
         return super(MultipleAutocompleteWidget, self).render(
             name, value, attrs, hattrs, initial_objects)
+
+    def url_parameters(self):
+        return self.base_url_parameters()
 
     def label_for_value(self, value):
         return ''
