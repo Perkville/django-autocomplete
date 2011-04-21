@@ -150,6 +150,8 @@ $.widget( "ui.djangoautocomplete", {
                             self.values.push( query );
                         } else {
                             self.element.val(data);
+                            self.lastSelected.value = data;
+                            self.lastSelected.id = query;
                         }
                         hidden_value = self.hidden_input.val();
                     }
