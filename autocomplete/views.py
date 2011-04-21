@@ -19,6 +19,7 @@ class AutocompleteSettings(object):
     queryset = key = None
     search_fields = []
     limit = 5
+    add_button = True
     reverse_label = None
     login_required = False
     js_options = {}
@@ -87,29 +88,40 @@ class AutocompleteSettings(object):
                 setattr(self, name, build_func(attr))
 
     def view(self, request):
-        query = request.GET.get('term', None)
-
-        if query is None:
-            raise Http404
-
         if not self.has_permission(request):
             return self.forbidden(request)
 
-        queryset = self.queryset
-        for bit in query.split():
-            or_queries = [models.Q(**{self._construct_search(
-                smart_str(field_name)): bit})
-                    for field_name in self.search_fields]
+        query = request.GET.get('term', None)
 
-            queryset = queryset.filter(reduce(operator.or_, or_queries))
+        if query is None:
+            query = request.GET.get('lookup', None)
+            
+            if query is None:
+                raise Http404
+            
+            # lookup query
+            try:
+                data = smart_str(self.queryset.get(pk=query))
+            except ObjectDoesNotExist:
+                data = u''
 
-        data = []
-        for o in queryset[:self.limit]:
-            data.append(dict(
-                id=getattr(o, self.key),
-                value=self.value(o),
-                label=self.label(o),
-            ))
+        else:
+            # normal query
+            queryset = self.queryset
+            for bit in query.split():
+                or_queries = [models.Q(**{self._construct_search(
+                    smart_str(field_name)): bit})
+                        for field_name in self.search_fields]
+    
+                queryset = queryset.filter(reduce(operator.or_, or_queries))
+    
+            data = []
+            for o in queryset[:self.limit]:
+                data.append(dict(
+                    id=getattr(o, self.key),
+                    value=self.value(o),
+                    label=self.label(o),
+                ))
 
         return HttpResponse(simplejson.dumps(data), mimetype='application/json')
 

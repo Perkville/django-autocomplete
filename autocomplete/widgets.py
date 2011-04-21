@@ -36,8 +36,16 @@ class AutocompleteWidget(forms.Widget):
     def render(self, name, value, attrs=None, hattrs=None, initial_objects=u''):
         if value is None:
             value = ''
-        hidden_id = 'id_hidden_%s' % name
-        hidden_attrs = self.build_attrs(type='hidden', name=name, value=value, id=hidden_id)
+
+        classes = {}
+        if self.settings.field.rel:
+            if self.js_options['multiple']:
+                classes['class'] = 'vManyToManyRawIdAdminField'
+            hidden_id = attrs.pop('id', 'id_%s' % name)
+            attrs['id'] = 'id_ac_%s' % name
+        else:
+            hidden_id = 'id_hidden_%s' % name
+        hidden_attrs = self.build_attrs(classes, type='hidden', name=name, value=value, id=hidden_id)
         normal_attrs = self.build_attrs(attrs, type='text')
         if value:
             if self.settings.reverse_label:
@@ -52,7 +60,7 @@ class AutocompleteWidget(forms.Widget):
             u'<input%s />\n' % flatatt(normal_attrs),
             initial_objects,
             u'<script type="text/javascript">',
-            u'django.autocomplete("#id_%s", %s);' % (name, options),
+            u'django.autocomplete("#%s", %s);' % (attrs['id'], options),
             u'</script>\n',
         )))
 

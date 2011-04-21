@@ -127,6 +127,54 @@ $.widget( "ui.djangoautocomplete", {
                 self.hidden_input.val( self.element.val() );
             }
         });
+        if (self.options.multiple || self.options.force_selection) {
+            var hidden_value = self.hidden_input.val();
+            var lookupXhr;
+            var intervalID;
+            
+            function lookup(query){
+                if (self.options.multiple) {
+                    query = query.split(',').pop();
+                }
+                lookupXhr = $.getJSON(self.options.source, {
+                    lookup: query
+                }, function(data, status, xhr){
+                    if (xhr === lookupXhr) {
+                        if (self.options.multiple) {
+                            $('<li></li>')
+                            .addClass("ui-autocomplete-value")
+                            .data("value.autocomplete", query)
+                            .append('<a href="#">x</a>' + data)
+                            .appendTo(self.values_ul);
+                            self._addZebra(self.values_ul);
+                            self.values.push( query );
+                        } else {
+                            self.element.val(data);
+                        }
+                        hidden_value = self.hidden_input.val();
+                    }
+                });
+            };
+            
+            function check(){
+                check_value = self.hidden_input.val();
+                if (check_value && check_value != hidden_value) {
+                    clearInterval(intervalID);
+                    lookup(check_value);
+                }
+            }
+            
+            $(function() {
+                self.element.nextAll( "a.related-lookup, a.add-another" )
+                .click(function() {
+                    intervalID = window.setInterval(check, 200);
+                })
+                .blur(function() {
+                    clearInterval(intervalID);
+                });
+            });
+        }
+
     },
     
     destroy: function() {

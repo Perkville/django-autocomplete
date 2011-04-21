@@ -1,7 +1,9 @@
+import django
 from django.db import models
 from django.contrib import admin
 from django.conf import settings
 from django.core.urlresolvers import reverse
+from django.contrib.admin.widgets import RelatedFieldWidgetWrapper
 
 from autocomplete import widgets
 from autocomplete.views import autocomplete as default_view
@@ -29,9 +31,24 @@ class AutocompleteAdmin(object):
 
 
     def autocomplete_formfield(self, ac_id, formfield=None, **kwargs):
-        return autocomplete_formfield(ac_id, formfield, self.autocomplete_view,
-                AdminAutocompleteWidget, AdminMultipleAutocompleteWidget,
-                **kwargs)
+        formfield = autocomplete_formfield(ac_id, formfield, self.autocomplete_view,
+                AdminAutocompleteWidget, AdminMultipleAutocompleteWidget, **kwargs)
+        if (self.autocomplete_view.settings[ac_id].add_button and
+            isinstance(ac_id, (models.ForeignKey, models.ManyToManyField)) and
+            formfield and ac_id.name not in self.raw_id_fields):
+            request = kwargs.get("request", None)
+            related_modeladmin = self.admin_site._registry.get(
+                ac_id.rel.to)
+            can_add_related = bool(related_modeladmin and
+                related_modeladmin.has_add_permission(request))
+            if django.VERSION[1] > 2:   # for django 1.3+
+                formfield.widget = admin.widgets.RelatedFieldWidgetWrapper(
+                    formfield.widget, ac_id.rel, self.admin_site,
+                    can_add_related=can_add_related)
+            elif can_add_related:
+                formfield.widget = admin.widgets.RelatedFieldWidgetWrapper(
+                    formfield.widget, ac_id.rel, self.admin_site)
+        return formfield
 
     def formfield_for_dbfield(self, db_field, **kwargs):
         if db_field.name in self.autocomplete_fields:
