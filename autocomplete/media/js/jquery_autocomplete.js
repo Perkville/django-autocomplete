@@ -226,8 +226,12 @@ $.widget( "ui.djangoautocomplete", {
                     .prepend( '<a href="#">x</a>' );
             });
         } else {
-            this.values_ul = $( "<ul></ul>" ).insertAfter( this.element );
+            this.values_ul = $( "<ul></ul>" ).appendTo( this.element.parent() );
         }
+        // On DOM ready, move list to the end
+        $(function() {
+            self.values_ul.appendTo( self.element.parent() );
+        });
         this.values_ul.addClass( "ui-autocomplete-values" );
         this._addZebra(this.values_ul);
         $( ".ui-autocomplete-value a", this.values_ul[0] ).live( "click", function() {
