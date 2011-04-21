@@ -70,6 +70,13 @@ $.widget( "ui.djangoautocomplete", {
                 }
             }
         }).data( "autocomplete" )._renderItem = this.options.renderItem;
+        
+        // Override _resizeMenu to always set it to the size of the input box
+        this.element.data( "autocomplete" )._resizeMenu = function() {
+    		var ul = this.menu.element;
+    		ul.outerWidth( this.element.outerWidth() );
+        }
+    
         this._initSource();
         if ( this.options.multiple ) {
             this._initManyToMany();
