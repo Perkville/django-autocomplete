@@ -1,9 +1,13 @@
+from os.path import splitext
+
 import django
 from django.db import models
 from django.contrib import admin
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.contrib.admin.widgets import RelatedFieldWidgetWrapper
+from django.utils.encoding import smart_unicode
+from django.utils.translation import ugettext as _
 
 from autocomplete import widgets
 from autocomplete.views import autocomplete as default_view
@@ -48,6 +52,7 @@ class AutocompleteAdmin(object):
             elif can_add_related:
                 formfield.widget = admin.widgets.RelatedFieldWidgetWrapper(
                     formfield.widget, ac_id.rel, self.admin_site)
+        self._set_help_text(ac_id, formfield)
         return formfield
 
     def formfield_for_dbfield(self, db_field, **kwargs):
@@ -58,6 +63,37 @@ class AutocompleteAdmin(object):
             if db_field in self.autocomplete_view.settings:
                 return self.autocomplete_formfield(db_field, **kwargs)
         return super(AutocompleteAdmin, self).formfield_for_dbfield(db_field, **kwargs)
+
+    def _set_help_text(self, db_field, formfield):
+        """
+        Set the help text from the model Field. If it's a ManyToManyField use
+        an ugly hack to remove or change the default help text impose
+        by this Field type. See Django bug #9321.
+        
+        class MyModel(models.Model):
+            no_help_text = models.ManyToManyField()
+                -> help_text = ''
+                
+            defautl_help_text = models.ManyToManyField(help_text=u'.')
+                -> help_text = u'Field with autocompletion. Start typing text to get suggestions.'
+                
+            my_help_text = models.ManyToManyField(help_text=u'My help text.')
+                -> help_text = u'My help text.'
+                
+        In the last case, help_text should be finished by a dot.
+        If not, strange things can happen.
+        """
+        if isinstance(db_field, models.ManyToManyField):
+            help_text = smart_unicode(formfield.help_text[:-1]) # remove the last dot.
+            if help_text.startswith('.'):
+                help_text = _(u'Field with autocompletion. Start typing text to get suggestions.')
+            elif '.' in help_text:
+                help_text = u'%s.' % splitext(help_text)[0]
+            else:
+                help_text = u''
+        else:
+            help_text = smart_unicode(db_field.help_text)
+        formfield.help_text = help_text
 
     def _media(self):
         # little hack to include autocomplete's js before jquery.init.js
