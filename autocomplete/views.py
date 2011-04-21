@@ -26,6 +26,7 @@ class AutocompleteSettings(object):
     # Javascript settings
     auto_focus = True
     min_length = 1
+    highlight = True
     zebra = True
     cache = True
 
@@ -41,6 +42,7 @@ class AutocompleteSettings(object):
         self.js_options = {
                      'autoFocus': self.auto_focus,
                      'minLength': self.min_length,
+                     'highlight': self.highlight,
                      'zebra': self.zebra,
                      'cache': self.cache
                      }
@@ -188,4 +190,3 @@ class AutocompleteView(object):
     urls = property(urls)
 
 autocomplete = AutocompleteView()
-

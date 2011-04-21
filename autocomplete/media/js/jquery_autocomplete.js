@@ -8,6 +8,7 @@ $.widget( "ui.djangoautocomplete", {
         source: "../autocomplete/$name/",
         multiple: false,
         force_selection: true,
+        highlight: true,
         zebra: true,
         autoFocus: true,
         minLength: 1,
@@ -41,6 +42,30 @@ $.widget( "ui.djangoautocomplete", {
                                     {term: term},
                                     function( data, status, xhr ) {
 					if ( xhr === lastXhr ) {
+                        if (self.options.highlight) {
+                            $.each(data, function(idx, result){
+                                if (term) {
+                                    var label = result.label;
+                                    var parts = label.split(new RegExp("(?!<[^<>]*)(" +
+                                        $.ui.autocomplete.escapeRegex(term) +
+                                        ")(?![^<>]*>)", "gi"));
+                                    if (parts.length > 1) {
+                                        label = [];
+                                        var pos = 0;
+                                        for (var i=0; i<parts.length; i++) {
+                                            var part = parts[i];
+                                            if (part === term) {
+                                                label.push("<strong>" + result.label.substring(pos, pos + part.length) + "</strong>");                                                
+                                            } else {
+                                                label.push(result.label.substring(pos, pos + part.length));                                                
+                                            }
+                                            pos += part.length;
+                                        }
+                                        result.label = label.join("");
+                                    }
+                                }
+                            });
+                        }
     					queryCache[ term ] = data;
     					response( data );
 					}
