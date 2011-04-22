@@ -1,11 +1,21 @@
+import locale
 import unicodedata
 import operator
 
+from django.conf import settings
 from django.db import models
 from django.core.urlresolvers import reverse
 from django.http import Http404, HttpResponse, HttpResponseForbidden
 from django.utils import simplejson
 from django.utils.encoding import smart_str
+from django.db.models.fields.related import RelatedField
+
+
+
+# Set locale (use for sorting in autocomplete)
+# Simple solution but not really cool. We should avoid setting the locale in a web app.
+if getattr(settings, 'LC_COLLATE', None) and locale.getlocale(locale.LC_COLLATE) == (None, None):
+    locale.setlocale(locale.LC_COLLATE, settings.LC_COLLATE)
 
 
 def strip_accents(text):
@@ -64,7 +74,6 @@ class AutocompleteSettings(object):
         self.id = id
         self.current_app = current_app
 
-        from django.db.models.fields.related import RelatedField
         if isinstance(id, RelatedField):
             self.field = id
             self.model = self.field.rel.to
@@ -154,6 +163,8 @@ class AutocompleteSettings(object):
                     results.update((value for value in values.split(delimiter) if test(value)))
                             
             data = []
+            results = list(results)
+            results.sort(cmp=locale.strcoll)
             for o in list(results)[:self.limit]:
                 data.append({
                              'id': len(data),
