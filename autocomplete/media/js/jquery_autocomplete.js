@@ -11,6 +11,7 @@ $.widget( "ui.djangoautocomplete", {
         highlight: true,
         zebra: true,
         autoFocus: true,
+        delimiter: "",
         minLength: 1,
         cache: true,
         renderItem: function( ul, item) {
@@ -52,6 +53,34 @@ $.widget( "ui.djangoautocomplete", {
             });
             return term;
         }
+        var multiField = this.options.delimiter && !self.options.multiple && !self.options.force_selection;
+        if (multiField) {
+            var deliRegex = new RegExp(self.options.delimiter + "+\\s+")
+            var trimRegex = new RegExp(self.options.delimiter + "*\\s+$")
+    		function split( val ) {
+                val = val.replace(trimRegex, "");
+    			return val.split(deliRegex);
+    		}
+            var terms = split(this.element.val());
+            var termsSelect = terms;
+    		function extractCurrent( term ) {
+                var new_terms = split(term);
+                for (idx=0; idx<new_terms.length; idx++) {
+                    if (terms[idx] !== new_terms[idx]) {
+                        return new_terms[idx];
+                    }
+                }
+                return "";
+    		}
+            
+		    // Don't navigate away from the field on tab when selecting an item
+            this.element.bind("keydown", function(event){
+                if (event.keyCode === $.ui.keyCode.TAB &&
+                $(this).data("autocomplete").menu.active) {
+                    event.preventDefault();
+                }
+            });
+        }
         this.element.autocomplete({
             appendTo: this.element.parent(),
 			// Add SelectFirst, need jquery.ui >= 1.8.11
@@ -59,6 +88,10 @@ $.widget( "ui.djangoautocomplete", {
 			minLength: this.options.minLength,
             source: function(request, response) {
                 var term = request.term;
+                if (multiField) {
+    				term = extractCurrent(request.term);
+                    terms = split(self.element.val());
+                }
 				if ( self.options.cache && term in queryCache ) {
 					response( queryCache[ term ] );
 					return;
@@ -105,6 +138,23 @@ $.widget( "ui.djangoautocomplete", {
                   .find("li.ui-menu-item:odd a").addClass("ui-menu-item-alternate");
               }
 	        },
+			search: function() {
+				// Custom minLength that support multiple terms
+                if (multiField) {
+                    termsSelect = terms;
+    				var term = extractCurrent( this.value );
+    				if ( term.length < self.options.minLength ) {
+                        terms = split(this.value);
+    					return false;
+    				}
+                }
+			},
+			focus: function() {
+				// prevent value inserted on focus
+                if (multiField) {
+                    return false;
+                }
+			},
             select: function( event, ui ) {
                 self.lastSelected = ui.item;
                 if ( self.options.multiple ) {
@@ -118,6 +168,33 @@ $.widget( "ui.djangoautocomplete", {
                         self.values.push( ui.item.id );
                     }
                     return false;
+                } else if (multiField) {
+       				var new_terms = split( this.value );
+                    var selectionStart = 0;
+                    var deliLength = self.options.delimiter.length + 1;
+                    for (idx=0; idx<new_terms.length; idx++) {
+                        if (termsSelect[idx] !== new_terms[idx]) {
+            				// add the selected item
+                            if (new_terms.length > termsSelect.length) {
+                                termsSelect.splice(idx, 0, ui.item.value);
+                            } else {
+                                termsSelect[idx] = ui.item.value;
+                            }
+            				// add placeholder to get the delimiter-and-space at the end
+                            if (termsSelect.length === idx + 1) {
+                				termsSelect.push( "" );
+                            } else {
+                                deliLength = 0;                                
+                            }
+                            terms = termsSelect;
+            				this.value = termsSelect.join( self.options.delimiter + " " );
+                            selectionStart += ui.item.value.length + deliLength;
+                            this.setSelectionRange(selectionStart, selectionStart);
+                            break;
+                        }
+                        selectionStart += new_terms[idx].length + deliLength;
+                    }
+    				return false;
                 }
             }
         }).data( "autocomplete" )._renderItem = this.options.renderItem;
@@ -150,6 +227,7 @@ $.widget( "ui.djangoautocomplete", {
             } else if ( self.options.force_selection ) {
                 self.hidden_input.val( self.element.val() ? self.lastSelected.id : "" );
             } else {
+                self.element.val(self.element.val().replace(trimRegex, ""));
                 self.hidden_input.val( self.element.val() );
             }
         });

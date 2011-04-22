@@ -26,6 +26,7 @@ class AutocompleteSettings(object):
     js_options = {}
 
     # Javascript settings
+    delimiter = u''
     auto_focus = True
     min_length = 1
     highlight = True
@@ -42,6 +43,7 @@ class AutocompleteSettings(object):
             setattr(self, k, v)
         # Set JS options from class attributes (and indirectly from kwargs).
         self.js_options = {
+                     'delimiter': self.delimiter,
                      'autoFocus': self.auto_focus,
                      'minLength': self.min_length,
                      'highlight': self.highlight,
@@ -105,6 +107,49 @@ class AutocompleteSettings(object):
                 data = smart_str(self.queryset.get(pk=query))
             except ObjectDoesNotExist:
                 data = u''
+
+        elif self.delimiter:
+            # query for a multi-term field
+            delimiter = u'%s ' % self.delimiter
+            query = query.lower()
+            results = set()
+            for field_name in self.search_fields:
+                field_name = smart_str(field_name)
+                if field_name[0] in '^=@':
+                    real_field_name = field_name[1:]
+                else:
+                    real_field_name = field_name
+                
+                # get results from rows without delimiter
+                queryset = self.queryset.exclude(**{'%s__icontains' % real_field_name: delimiter})
+                queryset = queryset.filter(**{self._construct_search(field_name): query})
+                queryset = queryset.values_list(real_field_name, flat=True).distinct()
+                results.update(queryset[:self.limit])
+                
+                # get results from rows with delimiter
+                queryset = self.queryset.filter(**{'%s__icontains' % real_field_name: delimiter})
+                queryset = queryset.filter(**{'%s__icontains' % real_field_name: query})
+                queryset = queryset.values_list(real_field_name, flat=True).distinct()
+                
+                def test(value):
+                    value = value.lower()
+                    if field_name.startswith('^'):
+                        return value.startswith(query)
+                    elif field_name.startswith('='):
+                        return value == query
+                    else:
+                        return query in value
+                
+                for values in queryset[:self.limit]:
+                    results.update((value for value in values.split(delimiter) if test(value)))
+                            
+            data = []
+            for o in list(results)[:self.limit]:
+                data.append({
+                             'id': len(data),
+                             'value': o,
+                             'label': o
+                             })
 
         else:
             # normal query
