@@ -389,6 +389,11 @@ body.change-form .ui-autocomplete-values .ui-autocomplete-value a {
     float: right;
 }
 
+/* Adding spinner on query */
+.ui-autocomplete-loading {
+    background: url(../img/process-working.gif) right center no-repeat;
+}
+
 /* M2M */
 body.change-form ul.ui-autocomplete-values li {
     list-style: none;
