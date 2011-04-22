@@ -91,6 +91,9 @@ $.widget( "ui.djangoautocomplete", {
                 if (multiField) {
     				term = extractCurrent(request.term);
                     terms = split(self.element.val());
+                    if (terms.length === 1) {
+                        terms = [];
+                    }
                 }
 				if ( self.options.cache && term in queryCache ) {
 					response( queryCache[ term ] );
