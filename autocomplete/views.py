@@ -1,3 +1,4 @@
+import unicodedata
 import operator
 
 from django.db import models
@@ -5,6 +6,15 @@ from django.core.urlresolvers import reverse
 from django.http import Http404, HttpResponse, HttpResponseForbidden
 from django.utils import simplejson
 from django.utils.encoding import smart_str
+
+
+def strip_accents(text):
+    """
+    Remove accents (diacritic) from all characters.
+    """
+    return ''.join((char for char
+                    in unicodedata.normalize('NFD', text)
+                    if not unicodedata.combining(char)))
 
 
 class AlreadyRegistered(Exception):
@@ -111,7 +121,7 @@ class AutocompleteSettings(object):
         elif self.delimiter:
             # query for a multi-term field
             delimiter = u'%s ' % self.delimiter
-            query = query.lower()
+            query = strip_accents(query.lower())
             results = set()
             for field_name in self.search_fields:
                 field_name = smart_str(field_name)
@@ -132,7 +142,7 @@ class AutocompleteSettings(object):
                 queryset = queryset.values_list(real_field_name, flat=True).distinct()
                 
                 def test(value):
-                    value = value.lower()
+                    value = strip_accents(value.lower())
                     if field_name.startswith('^'):
                         return value.startswith(query)
                     elif field_name.startswith('='):
