@@ -127,9 +127,31 @@ class AutocompleteSettings(object):
             except ObjectDoesNotExist:
                 data = u''
 
-        elif self.delimiter:
-            # query for a multi-term field
-            delimiter = u'%s ' % self.delimiter
+        elif isinstance(self.field, RelatedField):
+            # RelatedField query
+            queryset = self.queryset
+            for bit in query.split():
+                or_queries = [models.Q(**{self._construct_search(
+                    smart_str(field_name)): bit})
+                        for field_name in self.search_fields]
+    
+                queryset = queryset.filter(reduce(operator.or_, or_queries))
+    
+            data = []
+            for o in queryset[:self.limit]:
+                data.append(dict(
+                    id=getattr(o, self.key),
+                    value=self.value(o),
+                    label=self.label(o),
+                ))
+
+        else:
+            # query for a CharField, TextField, etc.
+            if self.delimiter:
+                delimiter = u'%s ' % self.delimiter
+            else:
+                delimiter = ''
+                
             query = strip_accents(query.lower())
             
             start_results = set()
@@ -138,6 +160,10 @@ class AutocompleteSettings(object):
             for field_name in self.search_fields:
                 limit = self.limit
                 field_name = smart_str(field_name)
+                # Dropping support for '@' and '=' search type.
+                # '@' works only with MySQL MyISAM tables, and when correctly set.
+                # Most of the time with Django and MySQL, INNODB is use.
+                # I can't see a use case for '=' in an autocomplete field?
                 if field_name.startswith('^'):
                     real_field_name = field_name[1:]
                     contains = False
@@ -148,38 +174,51 @@ class AutocompleteSettings(object):
                 start_subresults = set()
                 contains_subresults = set()
                 
-                delimiter_q = models.Q(**{'%s__icontains' % real_field_name: delimiter})
                 contains_q = models.Q(**{'%s__icontains' % real_field_name: query})
                 
                 # get results from rows without delimiter
-                queryset = self.queryset.exclude(delimiter_q)
+                queryset = self.queryset
+                if delimiter:
+                    delimiter_q = models.Q(**{'%s__icontains' % real_field_name: delimiter})
+                    queryset = queryset.exclude(delimiter_q)
                 queryset = queryset.filter(**{'%s__istartswith' % real_field_name: query})
                 queryset = queryset.values_list(real_field_name, flat=True).distinct()
                 start_subresults.update(queryset[:limit])
                 
-                # get results from rows with delimiter
-                delimiter_queryset = self.queryset.filter(delimiter_q).filter(contains_q)
-                delimiter_queryset = delimiter_queryset.values_list(real_field_name, flat=True).distinct()
+                if delimiter:
+                    # get results from rows with delimiter
+                    delimiter_queryset = self.queryset.filter(delimiter_q).filter(contains_q)
+                    delimiter_queryset = delimiter_queryset.values_list(real_field_name, flat=True).distinct()
                 
-                limit = max((limit + 1) / 2, limit - len(start_subresults))
-
-                for values in delimiter_queryset[:limit]:
-                    start_subresults.update((value for value in values.split(delimiter) if value.startswith(query)))
-
+                    limit = max((limit + 1) / 2, limit - len(start_subresults))
+    
+                    for values in delimiter_queryset[:limit]:
+                        start_subresults.update((value
+                                                 for value
+                                                 in values.split(delimiter)
+                                                 if value.startswith(query)))
+    
                 start_results.update(start_subresults)
 
                 limit = self.limit - len(start_subresults)
 
                 if contains and limit > 0:
                     # get results from rows without delimiter
-                    queryset = self.queryset.exclude(delimiter_q).filter(contains_q)
+                    queryset = self.queryset
+                    if delimiter:
+                        queryset = queryset.exclude(delimiter_q)
+                    queryset = queryset.filter(contains_q)
                     queryset = queryset.values_list(real_field_name, flat=True).distinct()
                     contains_subresults.update(queryset[:limit])
                     
-                    limit = max((limit + 1) / 2, limit - len(contains_subresults))
-                                        
-                    for values in delimiter_queryset[:limit]:
-                        contains_subresults.update((value for value in values.split(delimiter) if query in value))
+                    if delimiter:
+                        limit = max((limit + 1) / 2, limit - len(contains_subresults))
+                                            
+                        for values in delimiter_queryset[:limit]:
+                            contains_subresults.update((value
+                                                        for value
+                                                        in values.split(delimiter)
+                                                        if query in value))
                         
                     contains_results.update(contains_subresults)
                     
@@ -197,24 +236,6 @@ class AutocompleteSettings(object):
                              'value': o,
                              'label': o
                              })
-
-        else:
-            # normal query
-            queryset = self.queryset
-            for bit in query.split():
-                or_queries = [models.Q(**{self._construct_search(
-                    smart_str(field_name)): bit})
-                        for field_name in self.search_fields]
-    
-                queryset = queryset.filter(reduce(operator.or_, or_queries))
-    
-            data = []
-            for o in queryset[:self.limit]:
-                data.append(dict(
-                    id=getattr(o, self.key),
-                    value=self.value(o),
-                    label=self.label(o),
-                ))
 
         return HttpResponse(simplejson.dumps(data), mimetype='application/json')
 
