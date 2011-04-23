@@ -131,41 +131,67 @@ class AutocompleteSettings(object):
             # query for a multi-term field
             delimiter = u'%s ' % self.delimiter
             query = strip_accents(query.lower())
-            results = set()
+            
+            start_results = set()
+            contains_results = set()
+            
             for field_name in self.search_fields:
+                limit = self.limit
                 field_name = smart_str(field_name)
-                if field_name[0] in '^=@':
+                if field_name.startswith('^'):
                     real_field_name = field_name[1:]
+                    contains = False
                 else:
                     real_field_name = field_name
+                    contains = True
+                    
+                start_subresults = set()
+                contains_subresults = set()
+                
+                delimiter_q = models.Q(**{'%s__icontains' % real_field_name: delimiter})
+                contains_q = models.Q(**{'%s__icontains' % real_field_name: query})
                 
                 # get results from rows without delimiter
-                queryset = self.queryset.exclude(**{'%s__icontains' % real_field_name: delimiter})
-                queryset = queryset.filter(**{self._construct_search(field_name): query})
+                queryset = self.queryset.exclude(delimiter_q)
+                queryset = queryset.filter(**{'%s__istartswith' % real_field_name: query})
                 queryset = queryset.values_list(real_field_name, flat=True).distinct()
-                results.update(queryset[:self.limit])
+                start_subresults.update(queryset[:limit])
                 
                 # get results from rows with delimiter
-                queryset = self.queryset.filter(**{'%s__icontains' % real_field_name: delimiter})
-                queryset = queryset.filter(**{'%s__icontains' % real_field_name: query})
-                queryset = queryset.values_list(real_field_name, flat=True).distinct()
+                delimiter_queryset = self.queryset.filter(delimiter_q).filter(contains_q)
+                delimiter_queryset = delimiter_queryset.values_list(real_field_name, flat=True).distinct()
                 
-                def test(value):
-                    value = strip_accents(value.lower())
-                    if field_name.startswith('^'):
-                        return value.startswith(query)
-                    elif field_name.startswith('='):
-                        return value == query
-                    else:
-                        return query in value
-                
-                for values in queryset[:self.limit]:
-                    results.update((value for value in values.split(delimiter) if test(value)))
+                limit = max((limit + 1) / 2, limit - len(start_subresults))
+
+                for values in delimiter_queryset[:limit]:
+                    start_subresults.update((value for value in values.split(delimiter) if value.startswith(query)))
+
+                start_results.update(start_subresults)
+
+                limit = self.limit - len(start_subresults)
+
+                if contains and limit > 0:
+                    # get results from rows without delimiter
+                    queryset = self.queryset.exclude(delimiter_q).filter(contains_q)
+                    queryset = queryset.values_list(real_field_name, flat=True).distinct()
+                    contains_subresults.update(queryset[:limit])
+                    
+                    limit = max((limit + 1) / 2, limit - len(contains_subresults))
+                                        
+                    for values in delimiter_queryset[:limit]:
+                        contains_subresults.update((value for value in values.split(delimiter) if query in value))
+                        
+                    contains_results.update(contains_subresults)
+                    
+            contains_results.difference_update(start_results)
+            contains_results = list(contains_results)
+            contains_results.sort(cmp=locale.strcoll)
+            start_results = list(start_results)
+            start_results.sort(cmp=locale.strcoll)
+            start_results.extend(contains_results)
                             
             data = []
-            results = list(results)
-            results.sort(cmp=locale.strcoll)
-            for o in list(results)[:self.limit]:
+            for o in start_results[:self.limit]:
                 data.append({
                              'id': len(data),
                              'value': o,
