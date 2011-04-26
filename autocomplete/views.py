@@ -54,9 +54,10 @@ class AutocompleteSettings(object):
     zebra = True
     cache = True
 
-    def label(self, obj):
+    def _label(self, obj):
         return unicode(obj)
-    value = label
+    value = _label
+    label = _label
 
 
     def __init__(self, id, current_app, **kwargs):
@@ -71,6 +72,12 @@ class AutocompleteSettings(object):
                      'zebra': self.zebra,
                      'cache': self.cache
                      }
+
+        if isinstance(self.queryset, models.base.ModelBase):
+            self.queryset = self.queryset._default_manager.all()
+        if isinstance(self.search_fields, basestring):
+            self.search_fields = (self.search_fields,)
+
 
         self.id = id
         self.current_app = current_app
@@ -96,6 +103,10 @@ class AutocompleteSettings(object):
                 self.search_fields = [id.name]
             if self.queryset is None:
                 self.queryset = id.model._default_manager.all()
+            if self.value == self._label:
+               self.value = id.name
+            if self.label == self._label:
+               self.label = id.name
             if self.key is None:
                 self.key = 'pk'
             if self.reverse_label is None:
@@ -104,6 +115,9 @@ class AutocompleteSettings(object):
             self.field = None
             self.model = self.queryset.model
             self.id = id
+            _, value = id.split(u'.')
+            if not self.search_fields:
+               self.search_fields = (value,)
             if self.key is None:
                 self.key = 'pk'
             if self.reverse_label is None:
