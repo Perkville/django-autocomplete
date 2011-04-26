@@ -33,8 +33,9 @@ class AutocompleteAdmin(object):
     autocomplete_view = default_view
     autocomplete_fields = {}
 
-
-    def autocomplete_formfield(self, ac_id, formfield=None, **kwargs):
+    def autocomplete_formfield(self, ac_id, formfield=None, options=None, **kwargs):
+        if options is not None:
+            kwargs['options'] = options
         formfield = autocomplete_formfield(ac_id, formfield, self.autocomplete_view,
                 AdminAutocompleteWidget, AdminMultipleAutocompleteWidget, **kwargs)
         if (self.autocomplete_view.settings[ac_id].add_button and
@@ -59,6 +60,17 @@ class AutocompleteAdmin(object):
     def formfield_for_dbfield(self, db_field, **kwargs):
         if db_field.name in self.autocomplete_fields:
             ac_id = self.autocomplete_fields[db_field.name]
+            options = None
+            if not ac_id:
+                options = {}
+            elif isinstance(ac_id, dict):
+                options = ac_id
+            elif isinstance(ac_id, (tuple, list)):
+                options = {'search_fields': ac_id}
+            elif isinstance(ac_id, basestring) and ac_id in self.model._meta.get_all_field_names():
+                options = {'search_fields': (ac_id,)}
+            if options is not None:
+                return self.autocomplete_formfield(db_field, options=options, **kwargs)
             return self.autocomplete_formfield(ac_id, db_field.formfield, **kwargs)
         elif self.autocomplete_autoconfigure:
             if db_field in self.autocomplete_view.settings:

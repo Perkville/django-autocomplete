@@ -88,7 +88,19 @@ class AutocompleteSettings(object):
                 self.key = self.field.rel.get_related_field().name
             if self.reverse_label is None:
                 self.reverse_label = True
-        elif isinstance(id, (str, unicode)):
+        elif isinstance(id, models.Field):
+            self.field = id
+            self.model = id.model
+            self.id = '.'.join((id.model.__name__, id.name))
+            if not self.search_fields:
+                self.search_fields = [id.name]
+            if self.queryset is None:
+                self.queryset = id.model._default_manager.all()
+            if self.key is None:
+                self.key = 'pk'
+            if self.reverse_label is None:
+                self.reverse_label = False
+        elif isinstance(id, basestring):
             self.field = None
             self.model = self.queryset.model
             self.id = id
