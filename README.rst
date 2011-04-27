@@ -84,6 +84,7 @@ fields in the Admin like this::
                                 
 No need to register or to create an AutocompleteSettings class.
 The *title* CharField will have theses attributes automatically set:
+
     - search_fields = ('title',)
     - value = label = 'title'
     - queryset = MyClass._default_manager.all()
