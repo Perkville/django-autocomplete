@@ -44,7 +44,7 @@ $.widget( "ui.djangoautocomplete", {
             "ğ": "g",
         };
         function convertEntities(val) {
-            return $('<div/>').html(val).html();
+            return $('<div/>').html(val).html().replace('&nbsp;', ' ');
         }
         function stripAccents(term) {
             term = convertEntities(term).toLowerCase();
