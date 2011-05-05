@@ -412,10 +412,11 @@ body.change-form .ui-autocomplete-values {
     overflow-x: hidden;
     overflow-y: auto;
     padding: 0;
+    margin-left: 106px;
 }
 
 body.change-form .ui-autocomplete-values .ui-autocomplete-value a {
-    margin: 0 11px;
+    margin: 0 0 0 11px;
     color: #CC0000;
     font-weight: bold;
 }
