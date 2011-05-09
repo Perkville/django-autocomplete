@@ -347,7 +347,7 @@
 }
 
 /* django-autocomplpete customizations */
-body.change-form form ul.ui-autocomplete {
+body.change-form ul.ui-autocomplete {
     margin-left: 0;
     padding: 0;
     /* add scrolling */
@@ -404,7 +404,7 @@ body.change-form ul.ui-autocomplete-values li {
 
 body.change-form .ui-autocomplete-values {
     border: 1px solid #CCCCCC;
-    background-color: #F5F5F5;
+    background-color: #EEEEEE;
     width: 270px;
     min-height: 18px;
     max-height: 200px;
