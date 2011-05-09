@@ -4,6 +4,7 @@ import operator
 
 from django.conf import settings
 from django.db import models
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import reverse
 from django.http import Http404, HttpResponse, HttpResponseForbidden
 from django.utils import simplejson
@@ -104,9 +105,9 @@ class AutocompleteSettings(object):
             if self.queryset is None:
                 self.queryset = id.model._default_manager.all()
             if self.value == self._label:
-               self.value = id.name
+                self.value = id.name
             if self.label == self._label:
-               self.label = id.name
+                self.label = id.name
             if self.key is None:
                 self.key = 'pk'
             if self.reverse_label is None:
@@ -117,7 +118,7 @@ class AutocompleteSettings(object):
             self.id = id
             _, value = id.split(u'.')
             if not self.search_fields:
-               self.search_fields = (value,)
+                self.search_fields = (value,)
             if self.key is None:
                 self.key = 'pk'
             if self.reverse_label is None:
