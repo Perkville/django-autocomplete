@@ -1,6 +1,7 @@
 from django import forms
 from django.forms.util import flatatt
 from django.utils import simplejson
+from django.utils.encoding import force_unicode
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext as _
 from django.conf import settings
@@ -145,3 +146,14 @@ class MultipleAutocompleteWidget(AutocompleteWidget):
             output.append(u'<li>%s</li>' % settings.label(obj))
         output.append(u'</ul>\n')
         return mark_safe(u'\n'.join(output))
+
+    def _has_changed(self, initial, data):
+        if initial is None:
+            initial = []
+        if data is None:
+            data = []
+        if len(initial) != len(data):
+            return True
+        initial_set = set([force_unicode(value) for value in initial])
+        data_set = set([force_unicode(value) for value in data])
+        return data_set != initial_set
