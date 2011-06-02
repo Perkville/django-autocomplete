@@ -399,6 +399,10 @@ $.widget( "ui.djangoautocomplete", {
                     .appendTo( self.values_ul );
             })
         }
+        // On DOM ready, move list to the end
+        $(function() {
+            self.values_ul.appendTo( self.element.parent() );
+        });
         this._addZebra(this.values_ul);
         if (this.options.autoFocus) {
             this.element.bind( "autocompleteclose", function( event, ui ) {
