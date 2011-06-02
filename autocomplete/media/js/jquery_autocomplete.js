@@ -55,8 +55,8 @@ $.widget( "ui.djangoautocomplete", {
         }
         var multiField = this.options.delimiter && !self.options.multiple && !self.options.force_selection;
         if (multiField) {
-            var deliRegex = new RegExp('(?:' + self.options.delimiter + ")+\\s*")
-            var trimRegex = new RegExp('(?:' + self.options.delimiter + ")*\\s*$")
+            var deliRegex = new RegExp('(?:' + self.options.delimiter.replace(' ', '(?: | )') + ")+\\s*")
+            var trimRegex = new RegExp('(?:' + self.options.delimiter.replace(' ', '(?: | )') + ")*\\s*$")
     		function split( val ) {
                 val = val.replace(trimRegex, "");
     			return val.split(deliRegex);
