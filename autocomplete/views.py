@@ -180,7 +180,7 @@ class AutocompleteSettings(object):
                 delimiter_query = models.Q(**{'%s__icontains' % field_name: self.delimiter})
                 queryset = self.queryset.exclude(delimiter_query)
                 queryset = queryset.filter(**{'%s__istartswith' % field_name: query})
-                queryset = queryset.values_list(field_name, flat=True).distinct()
+                queryset = queryset.values_list(field_name, flat=True).distinct().order_by(field_name)
                 start_subresults.update(queryset[:limit])
                 
                 # get results from rows with delimiter
@@ -203,7 +203,7 @@ class AutocompleteSettings(object):
                     # get results from rows without delimiter
                     queryset = self.queryset.exclude(delimiter_query)
                     queryset = queryset.filter(contains_query)
-                    queryset = queryset.values_list(field_name, flat=True).distinct()
+                    queryset = queryset.values_list(field_name, flat=True).distinct().order_by(field_name)
                     contains_subresults.update(queryset[:limit])
                     
                     limit = max((limit + 1) / 2, limit - len(contains_subresults))
