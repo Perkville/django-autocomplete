@@ -157,7 +157,6 @@ class AutocompleteSettings(object):
 
         elif self.delimiter and not isinstance(self.field, RelatedField):
             # query for a Delimited field
-            delimiter = u'%s ' % self.delimiter                
             query = strip_accents(query.lower())
             
             start_results = set()
@@ -178,7 +177,7 @@ class AutocompleteSettings(object):
                 contains_query = models.Q(**{'%s__icontains' % field_name: query})
                 
                 # get results from rows without delimiter
-                delimiter_query = models.Q(**{'%s__icontains' % field_name: delimiter})
+                delimiter_query = models.Q(**{'%s__icontains' % field_name: self.delimiter})
                 queryset = self.queryset.exclude(delimiter_query)
                 queryset = queryset.filter(**{'%s__istartswith' % field_name: query})
                 queryset = queryset.values_list(field_name, flat=True).distinct()
@@ -193,7 +192,7 @@ class AutocompleteSettings(object):
                 for values in delimiter_queryset[:limit]:
                     start_subresults.update((value
                                              for value
-                                             in values.split(delimiter)
+                                             in values.split(self.delimiter)
                                              if value.startswith(query)))
     
                 start_results.update(start_subresults)
@@ -212,7 +211,7 @@ class AutocompleteSettings(object):
                     for values in delimiter_queryset[:limit]:
                         contains_subresults.update((value
                                                     for value
-                                                    in values.split(delimiter)
+                                                    in values.split(self.delimiter)
                                                     if query in value))
                         
                     contains_results.update(contains_subresults)

@@ -55,8 +55,8 @@ $.widget( "ui.djangoautocomplete", {
         }
         var multiField = this.options.delimiter && !self.options.multiple && !self.options.force_selection;
         if (multiField) {
-            var deliRegex = new RegExp(self.options.delimiter + "+\\s+")
-            var trimRegex = new RegExp(self.options.delimiter + "*\\s+$")
+            var deliRegex = new RegExp('(?:' + self.options.delimiter + ")+\\s*")
+            var trimRegex = new RegExp('(?:' + self.options.delimiter + ")*\\s*$")
     		function split( val ) {
                 val = val.replace(trimRegex, "");
     			return val.split(deliRegex);
@@ -174,7 +174,7 @@ $.widget( "ui.djangoautocomplete", {
                 } else if (multiField) {
        				var new_terms = split( this.value );
                     var selectionStart = 0;
-                    var deliLength = self.options.delimiter.length + 1;
+                    var deliLength = self.options.delimiter.length;
                     for (idx=0; idx<new_terms.length; idx++) {
                         if (termsSelect[idx] !== new_terms[idx]) {
             				// add the selected item
@@ -190,7 +190,7 @@ $.widget( "ui.djangoautocomplete", {
                                 deliLength = 0;                                
                             }
                             terms = termsSelect;
-            				this.value = termsSelect.join( self.options.delimiter + " " );
+            				this.value = termsSelect.join( self.options.delimiter );
                             selectionStart += ui.item.value.length + deliLength;
                             this.setSelectionRange(selectionStart, selectionStart);
                             break;
