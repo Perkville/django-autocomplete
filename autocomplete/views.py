@@ -193,7 +193,7 @@ class AutocompleteSettings(object):
                     start_subresults.update((value
                                              for value
                                              in values.split(self.delimiter)
-                                             if value.startswith(query)))
+                                             if strip_accents(value.lower()).startswith(query)))
     
                 start_results.update(start_subresults)
 
@@ -212,7 +212,7 @@ class AutocompleteSettings(object):
                         contains_subresults.update((value
                                                     for value
                                                     in values.split(self.delimiter)
-                                                    if query in value))
+                                                    if query in strip_accents(value.lower())))
                         
                     contains_results.update(contains_subresults)
                     
