@@ -43,6 +43,7 @@ class AutocompleteSettings(object):
 
     # Javascript settings
     delimiter = u''
+    delimiter_list = True
     auto_focus = True
     min_length = 1
     highlight = True
@@ -61,6 +62,7 @@ class AutocompleteSettings(object):
         # Set JS options from class attributes (and indirectly from kwargs).
         self.js_options = {
                      'delimiter': self.delimiter,
+                     'delimiterList': self.delimiter_list,
                      'autoFocus': self.auto_focus,
                      'minLength': self.min_length,
                      'highlight': self.highlight,

@@ -8,6 +8,7 @@ $.widget( "ui.djangoautocomplete", {
         source: "../autocomplete/$name/",
         multiple: false,
         force_selection: true,
+        delimiterList: true,
         highlight: true,
         zebra: true,
         autoFocus: true,
@@ -55,31 +56,36 @@ $.widget( "ui.djangoautocomplete", {
         }
         var multiField = this.options.delimiter && !self.options.multiple && !self.options.force_selection;
         if (multiField) {
-            var deliRegex = new RegExp('(?:' + self.options.delimiter.replace(' ', '(?: | )') + ")+\\s*")
-            var trimRegex = new RegExp('(?:' + self.options.delimiter.replace(' ', '(?: | )') + ")*\\s*$")
-    		function split( val ) {
-                val = val.replace(trimRegex, "");
-    			return val.split(deliRegex);
-    		}
-            var terms = split(this.element.val());
-            var termsSelect = terms;
-    		function extractCurrent( term ) {
-                var new_terms = split(term);
-                for (idx=0; idx<new_terms.length; idx++) {
-                    if (terms[idx] !== new_terms[idx]) {
-                        return new_terms[idx];
+            if (self.options.delimiterList) {
+                var delimiterList = true;
+                multiField = false;
+            } else {
+                var deliRegex = new RegExp('(?:' + self.options.delimiter.replace(' ', '(?: | )') + ")+\\s*")
+                var trimRegex = new RegExp('(?:' + self.options.delimiter.replace(' ', '(?: | )') + ")*\\s*$")
+                function split(val){
+                    val = val.replace(trimRegex, "");
+                    return val.split(deliRegex);
+                }
+                var terms = split(this.element.val());
+                var termsSelect = terms;
+                function extractCurrent(term){
+                    var new_terms = split(term);
+                    for (idx = 0; idx < new_terms.length; idx++) {
+                        if (terms[idx] !== new_terms[idx]) {
+                            return new_terms[idx];
+                        }
                     }
+                    return "";
                 }
-                return "";
-    		}
-            
-		    // Don't navigate away from the field on tab when selecting an item
-            this.element.bind("keydown", function(event){
-                if (event.keyCode === $.ui.keyCode.TAB &&
-                $(this).data("autocomplete").menu.active) {
-                    event.preventDefault();
-                }
-            });
+                
+                // Don't navigate away from the field on tab when selecting an item
+                this.element.bind("keydown", function(event){
+                    if (event.keyCode === $.ui.keyCode.TAB &&
+                    $(this).data("autocomplete").menu.active) {
+                        event.preventDefault();
+                    }
+                });
+            }
         }
         this.element.autocomplete({
             appendTo: this.element.parent(),
@@ -160,15 +166,26 @@ $.widget( "ui.djangoautocomplete", {
 			},
             select: function( event, ui ) {
                 self.lastSelected = ui.item;
-                if ( self.options.multiple ) {
-                    if ( $.inArray( ui.item.id, self.values ) < 0 ) {
+                if ( delimiterList ) {
+                    if ( $.inArray( ui.item.value, self.values ) < 0 ) {
                         $('<li></li>')
                             .addClass( "ui-autocomplete-value" )
-                            .data( "value.autocomplete", ui.item.id )
+                            .data( "value.autocomplete", ui.item.value )
                             .append( '<a href="#">x</a>' + ui.item.value )
                             .appendTo( self.values_ul );
                         self._addZebra(self.values_ul);
-                        self.values.push( ui.item.id );
+                        self.values.push( ui.item.value );
+                    }
+                    return false;
+                } else if (self.options.multiple) {
+                    if ($.inArray(ui.item.id, self.values) < 0) {
+                        $('<li></li>')
+                        	.addClass("ui-autocomplete-value")
+                        	.data("value.autocomplete", ui.item.id)
+                        	.append('<a href="#">x</a>' + ui.item.value)
+                        	.appendTo(self.values_ul);
+                        self._addZebra(self.values_ul);
+                        self.values.push(ui.item.id);
                     }
                     return false;
                 } else if (multiField) {
@@ -209,7 +226,9 @@ $.widget( "ui.djangoautocomplete", {
         }
     
         this._initSource();
-        if ( this.options.multiple ) {
+        if ( delimiterList ) {
+            this._initDelimiterList();
+        } else if (this.options.multiple) {
             this._initManyToMany();
         } else {
             this.lastSelected = {
@@ -225,7 +244,9 @@ $.widget( "ui.djangoautocomplete", {
             });
         }
         this.element.closest( "form" ).submit(function() {
-            if ( self.options.multiple ) {
+            if (delimiterList) {
+                self.hidden_input.val(self.values.join(self.options.delimiter));
+            } else if ( self.options.multiple ) {
                 self.hidden_input.val( self.values.join(",") );
             } else if ( self.options.force_selection ) {
                 self.hidden_input.val( self.element.val() ? self.lastSelected.id : "" );
@@ -288,7 +309,7 @@ $.widget( "ui.djangoautocomplete", {
     
     destroy: function() {
         this.element.autocomplete( "destroy" );
-        if ( this.options.multiple ) {
+        if ( this.options.multiple || delimiterList ) {
             this.values_ul.remove();
         }
 		$.Widget.prototype.destroy.call( this );
@@ -343,6 +364,76 @@ $.widget( "ui.djangoautocomplete", {
         });
         this.values_ul.addClass( "ui-autocomplete-values" );
         this._addZebra(this.values_ul);
+        $( ".ui-autocomplete-value a", this.values_ul[0] ).live( "click", function() {
+            var span = $(this).parent();
+            var id = span.data( "value.autocomplete" );
+            $.each( self.values, function (i, v) {
+                if (v === id) {
+                    self.values.splice(i, 1);
+                }
+            });
+            span.remove();
+            self._addZebra(self.values_ul);
+            return false;
+        });
+    },
+    
+    _initDelimiterList: function() {
+        var self = this;
+        this.autocomplete = this.element.data('autocomplete');
+        this.element.val( "" );
+        this.values = [];
+        if ( this.hidden_input.val() !== "" ) {
+            $.each(this.hidden_input.val().split( this.options.delimiter ), function(i, value) {
+                self.values.push( $.trim(value) );
+            });
+        }
+        this.lastSelected = { id: null, value: null };
+        this.values_ul = $( '<ul class="ui-autocomplete-values"></ul>' ).appendTo( this.element.parent() );
+        if ( this.values.length ) {
+            $(this.values).each(function(index, value) {
+                $('<li></li>')
+                    .addClass( "ui-autocomplete-value" )
+                    .data( "value.autocomplete", value )
+                    .append( '<a href="#">x</a>' + value )
+                    .appendTo( self.values_ul );
+            })
+        }
+        this._addZebra(this.values_ul);
+        if (this.options.autoFocus) {
+            this.element.bind( "autocompleteclose", function( event, ui ) {
+                self.element.val( "" );
+            });
+        } else {
+            // Add the typed text on enter
+            var delimiter = this.options.delimiter;
+            // Support both normal spaces and non-breaking spaces
+            // if there's spaces in the delimiter
+            if (delimiter.indexOf(' ') !== -1) {
+                delimiter = new RegExp(delimiter.replace(' ', '(?: | )'));
+            }
+            this.element.bind("keydown", function(event){
+                if (event.keyCode === $.ui.keyCode.ENTER &&
+                !self.autocomplete.menu.active) {
+                    event.stopImmediatePropagation();
+                    var values = $(this).val().split(delimiter);
+                    $(this).val("");
+                    self.autocomplete.close();
+                    $.each(values, function(index, value) {
+                        if ( $.inArray( value, self.values ) < 0 ) {
+                            $('<li></li>')
+                                .addClass( "ui-autocomplete-value" )
+                                .data( "value.autocomplete", value )
+                                .append( '<a href="#">x</a>' + value )
+                                .appendTo( self.values_ul );
+                                self._addZebra(self.values_ul);
+                            self.values.push( value );
+                        }
+                    });
+                    return false;
+                }
+            });
+        }
         $( ".ui-autocomplete-value a", this.values_ul[0] ).live( "click", function() {
             var span = $(this).parent();
             var id = span.data( "value.autocomplete" );
