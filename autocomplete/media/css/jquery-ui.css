@@ -395,11 +395,19 @@ body.change-form .ui-autocomplete-values .ui-autocomplete-value a {
 }
 
 /* M2M */
-body.change-form ul.ui-autocomplete-values li {
-    list-style: none;
-    margin: 0;
-    padding: 2px 4px;
+body.change-form table.ui-autocomplete-values tr {
     background-color: #FFFFFF;
+}
+
+body.change-form table.ui-autocomplete-values td {
+    padding: 0.2em 0.4em;
+    width: 258px;
+    line-height: 1.5;
+    border-bottom: none;
+}
+
+body.change-form table.ui-autocomplete-values td:last-child {
+    width: 1px;
 }
 
 body.change-form .ui-autocomplete-values {
@@ -413,16 +421,16 @@ body.change-form .ui-autocomplete-values {
     overflow-y: auto;
     padding: 0;
     margin-left: 106px;
+    display: block;
 }
 
 body.change-form .ui-autocomplete-values .ui-autocomplete-value a {
-    margin: 0 0 0 11px;
     color: #CC0000;
     font-weight: bold;
 }
 
 /* Zebra */
 body.change-form .ui-autocomplete a.ui-menu-item-alternate,
-body.change-form ul.ui-autocomplete-values li.ui-menu-item-alternate {
+body.change-form table.ui-autocomplete-values tr.ui-menu-item-alternate {
     background-color: #EDF3FE;  /* alternate item bgcolor */
 }

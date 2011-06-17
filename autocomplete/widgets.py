@@ -141,10 +141,10 @@ class MultipleAutocompleteWidget(AutocompleteWidget):
     
     def initial_objects(self, value):
         settings = self.settings
-        output = [u'<ul class="ui-autocomplete-values">']
+        output = [u'<table class="ui-autocomplete-values">']
         for obj in settings.queryset.filter(**{'%s__in' % settings.key: value}):
-            output.append(u'<li>%s</li>' % settings.label(obj))
-        output.append(u'</ul>\n')
+            output.append(u'<tr><td>%s</td></tr>' % settings.label(obj))
+        output.append(u'</table>\n')
         return mark_safe(u'\n'.join(output))
 
     def _has_changed(self, initial, data):

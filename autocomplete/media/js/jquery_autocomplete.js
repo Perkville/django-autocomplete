@@ -101,6 +101,7 @@ $.widget( "ui.djangoautocomplete", {
                         terms = [];
                     }
                 }
+                term = term.replace("'", "’");
 				if ( self.options.cache && term in queryCache ) {
 					response( queryCache[ term ] );
 					return;
@@ -168,24 +169,12 @@ $.widget( "ui.djangoautocomplete", {
                 self.lastSelected = ui.item;
                 if ( delimiterList ) {
                     if ( $.inArray( ui.item.value, self.values ) < 0 ) {
-                        $('<li></li>')
-                            .addClass( "ui-autocomplete-value" )
-                            .data( "value.autocomplete", ui.item.value )
-                            .append( '<a href="#">x</a>' + ui.item.value )
-                            .appendTo( self.values_ul );
-                        self._addZebra(self.values_ul);
-                        self.values.push( ui.item.value );
+                        self._buildValueRow(ui.item.value, ui.item.value);
                     }
                     return false;
                 } else if (self.options.multiple) {
                     if ($.inArray(ui.item.id, self.values) < 0) {
-                        $('<li></li>')
-                        	.addClass("ui-autocomplete-value")
-                        	.data("value.autocomplete", ui.item.id)
-                        	.append('<a href="#">x</a>' + ui.item.value)
-                        	.appendTo(self.values_ul);
-                        self._addZebra(self.values_ul);
-                        self.values.push(ui.item.id);
+                        self._buildValueRow(ui.item.id, ui.item.value);
                     }
                     return false;
                 } else if (multiField) {
@@ -269,13 +258,7 @@ $.widget( "ui.djangoautocomplete", {
                 }, function(data, status, xhr){
                     if (xhr === lookupXhr) {
                         if (self.options.multiple) {
-                            $('<li></li>')
-                            .addClass("ui-autocomplete-value")
-                            .data("value.autocomplete", query)
-                            .append('<a href="#">x</a>' + data)
-                            .appendTo(self.values_ul);
-                            self._addZebra(self.values_ul);
-                            self.values.push( query );
+                            self._buildValueRow(query, data);
                         } else {
                             self.element.val(data);
                             self.lastSelected.value = data;
@@ -330,9 +313,38 @@ $.widget( "ui.djangoautocomplete", {
     },
 
     _addZebra: function(elem) {
-        elem.find("li.ui-menu-item-alternate")
+        elem.find(".ui-menu-item-alternate")
         .removeClass("ui-menu-item-alternate").end()
-        .find("li.ui-autocomplete-value:odd").addClass("ui-menu-item-alternate");
+        .find(".ui-autocomplete-value:odd").addClass("ui-menu-item-alternate");
+    },
+    
+    _buildValueRow: function(id, value, oneRow) {
+        var self = this;
+        $('<tr></tr>')
+        	.addClass("ui-autocomplete-value")
+        	.data("value.autocomplete", id)
+        	.append('<td>' + value + '</td><td><a href="#">x</a></td>')
+        	.appendTo(self.values_ul);
+        if (oneRow !== false) {
+            self._addZebra(self.values_ul);
+            self.values.push(id);
+        }
+    },
+
+    _addRemoveOnClick: function() {
+        var self = this;
+        $( ".ui-autocomplete-value a", this.values_ul[0] ).live( "click", function() {
+            var span = $(this).closest('tr');
+            var id = span.data( "value.autocomplete" );
+            $.each( self.values, function (i, v) {
+                if (v === id) {
+                    self.values.splice(i, 1);
+                }
+            });
+            span.remove();
+            self._addZebra(self.values_ul);
+            return false;
+        });
     },
 
     _initManyToMany: function() {
@@ -346,17 +358,17 @@ $.widget( "ui.djangoautocomplete", {
                 self.values.push( parseInt(id, 10) );
             });
         }
-        this.values_ul = this.element.nextAll( "ul.ui-autocomplete-values" );
+        this.values_ul = this.element.nextAll( "table.ui-autocomplete-values" );
         this.lastSelected = { id: null, value: null };
         if ( this.values.length && this.values_ul[0] ) {
-            this.values_ul.children().each(function(i) {
+            this.values_ul.find('tr').each(function(i) {
                 $(this)
                     .addClass( "ui-autocomplete-value" )
                     .data( "value.autocomplete", self.values[i] )
-                    .prepend( '<a href="#">x</a>' );
+                    .append( '<td><a href="#">x</a></td>' );
             });
         } else {
-            this.values_ul = $( "<ul></ul>" ).appendTo( this.element.parent() );
+            this.values_ul = $( "<table></table>" ).appendTo( this.element.parent() );
         }
         // On DOM ready, move list to the end
         $(function() {
@@ -364,18 +376,7 @@ $.widget( "ui.djangoautocomplete", {
         });
         this.values_ul.addClass( "ui-autocomplete-values" );
         this._addZebra(this.values_ul);
-        $( ".ui-autocomplete-value a", this.values_ul[0] ).live( "click", function() {
-            var span = $(this).parent();
-            var id = span.data( "value.autocomplete" );
-            $.each( self.values, function (i, v) {
-                if (v === id) {
-                    self.values.splice(i, 1);
-                }
-            });
-            span.remove();
-            self._addZebra(self.values_ul);
-            return false;
-        });
+        this._addRemoveOnClick();
     },
     
     _initDelimiterList: function() {
@@ -389,14 +390,10 @@ $.widget( "ui.djangoautocomplete", {
             });
         }
         this.lastSelected = { id: null, value: null };
-        this.values_ul = $( '<ul class="ui-autocomplete-values"></ul>' ).appendTo( this.element.parent() );
+        this.values_ul = $( '<table class="ui-autocomplete-values"></table>' ).appendTo( this.element.parent() );
         if ( this.values.length ) {
             $(this.values).each(function(index, value) {
-                $('<li></li>')
-                    .addClass( "ui-autocomplete-value" )
-                    .data( "value.autocomplete", value )
-                    .append( '<a href="#">x</a>' + value )
-                    .appendTo( self.values_ul );
+                this._buildValueRow(value, value, false);
             })
         }
         // On DOM ready, move list to the end
@@ -425,10 +422,10 @@ $.widget( "ui.djangoautocomplete", {
                     self.autocomplete.close();
                     $.each(values, function(index, value) {
                         if ( $.inArray( value, self.values ) < 0 ) {
-                            $('<li></li>')
+                            $('<tr></tr>')
                                 .addClass( "ui-autocomplete-value" )
                                 .data( "value.autocomplete", value )
-                                .append( '<a href="#">x</a>' + value )
+                                .append('<td>' + value + '</td><td><a href="#">x</a><td>')
                                 .appendTo( self.values_ul );
                                 self._addZebra(self.values_ul);
                             self.values.push( value );
@@ -438,18 +435,7 @@ $.widget( "ui.djangoautocomplete", {
                 }
             });
         }
-        $( ".ui-autocomplete-value a", this.values_ul[0] ).live( "click", function() {
-            var span = $(this).parent();
-            var id = span.data( "value.autocomplete" );
-            $.each( self.values, function (i, v) {
-                if (v === id) {
-                    self.values.splice(i, 1);
-                }
-            });
-            span.remove();
-            self._addZebra(self.values_ul);
-            return false;
-        });
+        this._addRemoveOnClick();
     }
 });
 
