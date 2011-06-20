@@ -16,9 +16,12 @@ $.widget( "ui.djangoautocomplete", {
         minLength: 1,
         cache: true,
         renderItem: function( ul, item) {
-            return $( "<li></li>" )
+            var content = $( "<li></li>" );
+            $.each(item.label.split('\t'), function(i, v) {
+                content.append($('<a></a>').append(v));
+            });
+            return content
                 .data( "item.autocomplete", item )
-                .append( $( "<a></a>" ).append( item.label ) )
                 .appendTo( ul );
         }
 
@@ -101,7 +104,6 @@ $.widget( "ui.djangoautocomplete", {
                         terms = [];
                     }
                 }
-                term = term.replace("'", "’");
 				if ( self.options.cache && term in queryCache ) {
 					response( queryCache[ term ] );
 					return;
@@ -207,13 +209,25 @@ $.widget( "ui.djangoautocomplete", {
                 }
             }
         }).data( "autocomplete" )._renderItem = this.options.renderItem;
-        
         // Override _resizeMenu to always set it to the size of the input box
         this.element.data( "autocomplete" )._resizeMenu = function() {
     		var ul = this.menu.element;
+            ul.wrapInner('<div></div>');
     		ul.outerWidth( this.element.outerWidth() );
         }
-    
+        // Override menu move function to support the <div> around the <li>s.
+        this.element.data( "autocomplete" ).menu.move = function(direction, edge, event) {
+    		if (!this.active) {
+    			this.activate(event, this.element.find(edge));
+    			return;
+    		}
+    		var next = this.active[direction + "All"](".ui-menu-item").eq(0);
+    		if (next.length) {
+    			this.activate(event, next);
+    		} else {
+    			this.activate(event, this.element.find(edge));
+    		}
+    	}
         this._initSource();
         if ( delimiterList ) {
             this._initDelimiterList();
@@ -323,7 +337,7 @@ $.widget( "ui.djangoautocomplete", {
         $('<tr></tr>')
         	.addClass("ui-autocomplete-value")
         	.data("value.autocomplete", id)
-        	.append('<td>' + value + '</td><td><a href="#">x</a></td>')
+        	.append('<td>' + value.replace('\t', '</td><td>') + '</td><td><a href="#">x</a></td>')
         	.appendTo(self.values_ul);
         if (oneRow !== false) {
             self._addZebra(self.values_ul);

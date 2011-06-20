@@ -364,6 +364,20 @@ body.change-form ul.ui-autocomplete {
 	border-top: 0;
 }
 
+body.change-form ul.ui-autocomplete div {
+    display: table;
+    width: 100%;
+}
+
+body.change-form ul.ui-autocomplete div .ui-menu-item {
+	float: none;
+    display: table-row;
+}
+
+body.change-form ul.ui-autocomplete div .ui-menu-item a {
+	display: table-cell;
+}
+
 body.change-form .ui-autocomplete .ui-corner-all,
 body.change-form .ui-autocomplete {
     -moz-border-radius: 0;
@@ -399,9 +413,13 @@ body.change-form table.ui-autocomplete-values tr {
     background-color: #FFFFFF;
 }
 
+body.change-form table.ui-autocomplete-values tbody {
+    display: table;
+    width: 100%;
+}
+
 body.change-form table.ui-autocomplete-values td {
     padding: 0.2em 0.4em;
-    width: 258px;
     line-height: 1.5;
     border-bottom: none;
 }
