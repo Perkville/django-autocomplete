@@ -306,7 +306,7 @@ $.widget( "ui.djangoautocomplete", {
     
     destroy: function() {
         this.element.autocomplete( "destroy" );
-        if ( this.options.multiple || delimiterList ) {
+        if ( this.options.multiple || (this.options.delimiter && this.options.delimiterList) ) {
             this.values_ul.remove();
         }
 		$.Widget.prototype.destroy.call( this );
