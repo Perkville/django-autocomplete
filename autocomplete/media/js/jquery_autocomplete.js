@@ -461,3 +461,36 @@ django.autocomplete = function (id, options) {
 window.django = django;
 
 })(window);
+
+// Activate autocomplete on dynamically added row in inlines in admin.
+$(window).load(function() {
+    // Get all the inlines
+    $('.inline-group').each(function() {
+        var inlineGroup = $(this);
+        var acWidgets = [];
+        // For each inlines check for autocomplete input in the empty form
+        inlineGroup.find('.empty-form .ui-autocomplete-input').each(function() {
+            var ac = $(this);
+            // Copy the script tag and restore the pre-autocomplete state
+            var script = ac.nextAll('script');
+            acWidgets.push(script);
+            script.remove();
+            ac.nextAll('ul.ui-autocomplete').remove();
+            ac.before($('<input id="' + ac.attr('id') + '" type="text" />'));
+            ac.remove();
+        });
+        if (acWidgets.length > 0) {
+            inlineGroup.find('.add-row a').attr('href', '#').click(function() {
+                // Find the current id #
+                var num = $('#id_' + inlineGroup.attr('id').replace(/group$/, 'TOTAL_FORMS')).val() - 1;
+                $.each(acWidgets, function() {
+                    // Clone the script tag, add the id # and append the tag
+                    var widget = $(this).clone();
+                    widget.text(widget.text().replace('__prefix__', num));
+                    inlineGroup.append(widget);
+                });
+            });
+        }
+    });
+});
+
