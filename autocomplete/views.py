@@ -151,7 +151,12 @@ class AutocompleteSettings(object):
             except ObjectDoesNotExist:
                 data = u''
 
-        elif self.delimiter and not isinstance(self.field, RelatedField):
+        else:
+            data = self.sub_view(query)
+        return HttpResponse(simplejson.dumps(data), mimetype='application/json')
+            
+    def sub_view(self, query):
+        if self.delimiter and not isinstance(self.field, RelatedField):
             # query for a Delimited field
             query = strip_accents(query.lower())
             
@@ -276,8 +281,7 @@ class AutocompleteSettings(object):
                         ))
                         if self.distinct and len(values) >= self.limit:
                             break
-
-        return HttpResponse(simplejson.dumps(data), mimetype='application/json')
+        return data
 
     def has_permission(self, request):
         if self.login_required:
