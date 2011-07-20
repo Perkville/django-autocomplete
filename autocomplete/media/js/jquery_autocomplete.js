@@ -460,8 +460,6 @@ django.autocomplete = function (id, options) {
 
 window.django = django;
 
-})(window);
-
 // Activate autocomplete on dynamically added row in inlines in admin.
 $(window).load(function() {
     // Get all the inlines
@@ -494,3 +492,4 @@ $(window).load(function() {
     });
 });
 
+})(window);
