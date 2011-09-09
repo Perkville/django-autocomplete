@@ -143,7 +143,7 @@ class MultipleAutocompleteWidget(AutocompleteWidget):
         settings = self.settings
         output = [u'<table class="ui-autocomplete-values">']
         for obj in settings.queryset.filter(**{'%s__in' % settings.key: value}):
-            output.append(u'<tr><td>%s</td></tr>' % settings.label(obj))
+            output.append(u'<tr><td>%s</td></tr>' % settings.label(obj).replace(u'\t', u'</td><td>'))
         output.append(u'</table>\n')
         return mark_safe(u'\n'.join(output))
 
