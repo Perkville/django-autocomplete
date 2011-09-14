@@ -254,18 +254,21 @@ class AutocompleteSettings(object):
                     contains = False
                 else:
                     contains = True
+                # Remove '-' character showing order
+                field_name = field_name.lstrip('-')
                     
                 start_queries.append(models.Q(**{'%s__istartswith' % field_name: query}))
 
                 if contains:
                     contains_queries.append(models.Q(**{'%s__icontains' % field_name: query}))
 
-            start_query = self.queryset.filter(reduce(operator.or_, start_queries))
+            queryset = self.queryset.order_by(*[field_name.lstrip('^') for field_name in self.search_fields])
+            start_query = queryset.filter(reduce(operator.or_, start_queries))
             results.extend(start_query[:self.limit ** limit_pow])
 
             limit = self.limit - len(results)
             if contains_queries and limit > 0:
-                contains_query = self.queryset.exclude(pk__in=start_query).filter(reduce(operator.or_, contains_queries))
+                contains_query = queryset.exclude(pk__in=start_query).filter(reduce(operator.or_, contains_queries))
                 results.extend(contains_query[:limit ** limit_pow])
 
             data = []
