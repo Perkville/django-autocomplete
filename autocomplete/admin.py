@@ -16,9 +16,9 @@ from autocomplete.utils import autocomplete_formfield
 
 class AdminMedia:
     extend = False
-    js = (settings.AUTOCOMPLETE_MEDIA_PREFIX + 'js/jquery_autocomplete.js',)
+    js = (settings.STATIC_URL + 'autocomplete/js/jquery_autocomplete.js',)
     css = {'all':
-        (settings.AUTOCOMPLETE_MEDIA_PREFIX + 'css/jquery-ui.css',)
+        (settings.STATIC_URL + 'autocomplete/css/jquery-ui.css',)
     }
 
 class AdminAutocompleteWidget(widgets.AutocompleteWidget):
@@ -111,7 +111,7 @@ class AutocompleteAdmin(object):
     def _media(self):
         # little hack to include autocomplete's js before jquery.init.js
         media = super(AutocompleteAdmin, self).media
-        media._js.insert(3, settings.AUTOCOMPLETE_MEDIA_PREFIX + 'js/jquery-ui.min.js')
+        media._js.insert(3, settings.STATIC_URL + 'autocomplete/js/jquery-ui.min.js')
         return media
     media = property(_media)
 

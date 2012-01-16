@@ -18,13 +18,13 @@ class AutocompleteWidget(forms.Widget):
     }
     
     class Media:
-        js = tuple(settings.AUTOCOMPLETE_MEDIA_PREFIX + js for js in (
-            'js/jquery.min.js',
-            'js/jquery-ui.min.js',
-            'js/jquery_autocomplete.js',
+        js = tuple(settings.STATIC_URL + js for js in (
+            'autocomplete/js/jquery.min.js',
+            'autocomplete/js/jquery-ui.min.js',
+            'autocomplete/js/jquery_autocomplete.js',
         ))
         css = {'all':
-            (settings.AUTOCOMPLETE_MEDIA_PREFIX + 'css/jquery-ui.css',)
+            (settings.STATIC_URL + 'autocomplete/css/jquery-ui.css',)
         }
 
     def __init__(self, ac_id, view=default_view, attrs=None, using=None, **js_options):
