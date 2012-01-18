@@ -156,6 +156,8 @@ class AutocompleteSettings(object):
         return HttpResponse(simplejson.dumps(data), mimetype='application/json')
             
     def sub_view(self, query):
+        data = []
+
         if self.delimiter and not isinstance(self.field, RelatedField):
             # query for a Delimited field
             query = strip_accents(query.lower())
@@ -224,13 +226,69 @@ class AutocompleteSettings(object):
             start_results.sort(cmp=self.sort_cmp, key=self.sort_key)
             start_results.extend(contains_results)
                             
-            data = []
             for o in start_results[:self.limit]:
                 data.append({
                              'id': len(data),
                              'value': o,
                              'label': o
                              })
+
+        elif isinstance(self.field, models.CharField):
+            # Query distinct text in a CharField
+            queryset = self.queryset.distinct()
+            results = []
+            contains = []
+            start_queries = []
+            contains_queries = []
+            
+            for field_name in self.search_fields:
+                limit = self.limit - len(start_queries)
+                if limit <= 0:
+                    break
+                field_name = smart_str(field_name)
+                if field_name.startswith('^'):
+                    field_name = field_name[1:]
+                else:
+                    contains.append(field_name)
+                # Remove '-' character showing order
+                order = field_name
+                field_name = field_name.lstrip('-')
+                    
+                start_query = queryset.exclude(
+                                    **{'%s__in' % field_name: start_queries}
+                                ).filter(
+                                    **{'%s__istartswith' % field_name: query}
+                                ).values_list(
+                                    field_name, flat=True
+                                ).order_by(order)
+                start_queries.extend(start_query[:limit])
+                
+            results.extend(sorted(start_queries, cmp=self.sort_cmp, key=self.sort_key))
+
+            for field_name in contains:
+                limit = self.limit - len(results) - len(contains_queries)
+                if limit <= 0:
+                    break
+                order = field_name
+                field_name = field_name.lstrip('-')
+                    
+                contains_query = queryset.exclude(
+                                    **{'%s__in' % field_name: results + contains_queries}
+                                ).filter(
+                                    **{'%s__icontains' % field_name: query}
+                                ).values_list(
+                                    field_name, flat=True
+                                ).order_by(order)
+                contains_queries.extend(contains_query[:limit])
+
+            results.extend(sorted(contains_queries, cmp=self.sort_cmp, key=self.sort_key))
+
+            for idx, value in enumerate(results):
+                data.append(dict(
+                    id=idx,
+                    value=value,
+                    label=value,
+                ))
 
         else:
             # Normal query
@@ -271,7 +329,6 @@ class AutocompleteSettings(object):
                 contains_query = queryset.exclude(pk__in=start_query).filter(reduce(operator.or_, contains_queries))
                 results.extend(contains_query[:limit ** limit_pow])
 
-            data = []
             values = []
             for o in results:
                 value = self.value(o)
