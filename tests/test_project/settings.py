@@ -4,8 +4,12 @@ PROJECT_DIR = os.path.dirname(__file__)
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
-DATABASE_ENGINE = 'sqlite3'
-DATABASE_NAME = '/tmp/autocomplete.db'
+DATABASES = {
+             'default': {
+                         'ENGINE': 'django.db.backends.sqlite3',
+                         'NAME': '/tmp/autocomplete.db'
+                         }
+             }
 
 SITE_ID = 1
 
@@ -27,7 +31,7 @@ INSTALLED_APPS = (
 )
 
 ADMIN_MEDIA_PREFIX = '/media/admin/'
-AUTOCOMPLETE_MEDIA_PREFIX = '/media/autocomplete/'
+STATIC_URL = '/media/autocomplete/'
 
 TEMPLATE_DIRS = (
     os.path.join(PROJECT_DIR, 'templates'),
