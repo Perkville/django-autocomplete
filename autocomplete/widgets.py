@@ -9,6 +9,12 @@ from django.conf import settings
 from autocomplete.views import autocomplete as default_view
 
 
+
+try:
+    STATIC_URL = settings.AUTOCOMPLETE_MEDIA_PREFIX
+except AttributeError:
+    STATIC_URL = settings.STATIC_URL + 'autocomplete/'
+
 class AutocompleteWidget(forms.Widget):
 
     js_options = {
@@ -18,13 +24,13 @@ class AutocompleteWidget(forms.Widget):
     }
     
     class Media:
-        js = tuple(settings.STATIC_URL + js for js in (
-            'autocomplete/js/jquery.min.js',
-            'autocomplete/js/jquery-ui.min.js',
-            'autocomplete/js/jquery_autocomplete.js',
+        js = tuple(STATIC_URL + js for js in (
+            'js/jquery.min.js',
+            'js/jquery-ui.min.js',
+            'js/jquery_autocomplete.js',
         ))
         css = {'all':
-            (settings.STATIC_URL + 'autocomplete/css/jquery-ui.css',)
+            (STATIC_URL + 'css/jquery-ui.css',)
         }
 
     def __init__(self, ac_id, view=default_view, attrs=None, using=None, **js_options):

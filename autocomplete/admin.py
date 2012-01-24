@@ -3,9 +3,6 @@ from os.path import splitext
 import django
 from django.db import models
 from django.contrib import admin
-from django.conf import settings
-from django.core.urlresolvers import reverse
-from django.contrib.admin.widgets import RelatedFieldWidgetWrapper
 from django.utils.encoding import smart_unicode
 from django.utils.translation import ugettext as _
 
@@ -16,9 +13,9 @@ from autocomplete.utils import autocomplete_formfield
 
 class AdminMedia:
     extend = False
-    js = (settings.STATIC_URL + 'autocomplete/js/jquery_autocomplete.js',)
+    js = (widgets.STATIC_URL + 'js/jquery_autocomplete.js',)
     css = {'all':
-        (settings.STATIC_URL + 'autocomplete/css/jquery-ui.css',)
+        (widgets.STATIC_URL + 'css/jquery-ui.css',)
     }
 
 class AdminAutocompleteWidget(widgets.AutocompleteWidget):
@@ -111,7 +108,7 @@ class AutocompleteAdmin(object):
     def _media(self):
         # little hack to include autocomplete's js before jquery.init.js
         media = super(AutocompleteAdmin, self).media
-        media._js.insert(3, settings.STATIC_URL + 'autocomplete/js/jquery-ui.min.js')
+        media._js.insert(3, widgets.STATIC_URL + 'js/jquery-ui.min.js')
         return media
     media = property(_media)
 
