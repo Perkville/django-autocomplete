@@ -26,13 +26,33 @@ class AdminMultipleAutocompleteWidget(widgets.MultipleAutocompleteWidget):
 
 
 class AutocompleteAdmin(object):
+    autocomplete_autoregister = True
     autocomplete_autoconfigure = True
     autocomplete_view = default_view
     autocomplete_fields = {}
 
-    def autocomplete_formfield(self, ac_id, formfield=None, options=None, **kwargs):
-        if options is not None:
-            kwargs['options'] = options
+    def __init__(self, model, admin_site):
+        """
+        Autoregister autocomplete settings for AutocompleteAdmin subclasses. 
+        """
+        super(AutocompleteAdmin, self).__init__(model, admin_site)
+        if self.autocomplete_autoregister and self.autocomplete_fields:
+            for field, options in self.autocomplete_fields.iteritems():
+                db_field = model._meta.get_field_by_name(field)[0]
+                if not options:
+                    options = {}
+                elif isinstance(options, (tuple, list)):
+                    options = {'search_fields': options}
+                elif isinstance(options, basestring):
+                    options = {'search_fields': (options,)}
+                elif not isinstance(options, dict):
+                    raise ValueError("Invalid type for %s autocomplete_fields "
+                                     "'%s' options." 
+                                     % (self.__class__.__name__, field))
+                self.autocomplete_view.register(db_field, **options)
+            
+
+    def autocomplete_formfield(self, ac_id, formfield=None, **kwargs):
         formfield = autocomplete_formfield(ac_id, formfield, self.autocomplete_view,
                 AdminAutocompleteWidget, AdminMultipleAutocompleteWidget, **kwargs)
         if (self.autocomplete_view.settings[ac_id].add_button and
@@ -55,21 +75,11 @@ class AutocompleteAdmin(object):
         return formfield
 
     def formfield_for_dbfield(self, db_field, **kwargs):
-        if db_field.name in self.autocomplete_fields:
+        if (not self.autocomplete_autoregister
+                and db_field.name in self.autocomplete_fields):
             ac_id = self.autocomplete_fields[db_field.name]
-            options = None
-            if not ac_id:
-                options = {}
-            elif isinstance(ac_id, dict):
-                options = ac_id
-            elif isinstance(ac_id, (tuple, list)):
-                options = {'search_fields': ac_id}
-            elif isinstance(ac_id, basestring) and ac_id in self.model._meta.get_all_field_names():
-                options = {'search_fields': (ac_id,)}
-            if options is not None:
-                return self.autocomplete_formfield(db_field, options=options, **kwargs)
             return self.autocomplete_formfield(ac_id, db_field.formfield, **kwargs)
-        elif self.autocomplete_autoconfigure:
+        elif self.autocomplete_autoregister or self.autocomplete_autoconfigure:
             if db_field in self.autocomplete_view.settings:
                 return self.autocomplete_formfield(db_field, **kwargs)
         return super(AutocompleteAdmin, self).formfield_for_dbfield(db_field, **kwargs)
@@ -115,7 +125,8 @@ class AutocompleteAdmin(object):
     def _autocomplete_view(request, field):
         info = self.model._meta.app_label, self.model._meta.module_name, field
 
-        if field in self.autocomplete_fields:
+        if (not self.autocomplete_autoregister
+                and field in self.autocomplete_fields):
             ac_id = self.autocomplete_fields[field]
         else:
             ac_id = '/'.join(info)

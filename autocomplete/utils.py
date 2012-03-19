@@ -29,11 +29,6 @@ def autocomplete_formfield(ac_id, formfield=None, view=default_view,
     db = kwargs.get('using')
     options = kwargs.pop('options', {}) # get js_options if there's some
                                         # (need to be a dict)
-
-    # autoregister settings if there's no settings.
-    if not view.has_settings(ac_id) and (not isinstance(ac_id, basestring)
-                                         or options.get('queryset')):
-        view.register(ac_id, **options)
     settings = view.get_settings(ac_id)
     if widget_class is None:
         widget_class = widgets.AutocompleteWidget
