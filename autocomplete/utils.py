@@ -27,8 +27,6 @@ def autocomplete_formfield(ac_id, formfield=None, view=default_view,
     """
     kwargs.pop('request', None) # request can be passed by contrib.admin
     db = kwargs.get('using')
-    options = kwargs.pop('options', {}) # get js_options if there's some
-                                        # (need to be a dict)
     settings = view.get_settings(ac_id)
     if widget_class is None:
         widget_class = widgets.AutocompleteWidget
