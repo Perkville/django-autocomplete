@@ -56,12 +56,12 @@
 
 /* Component containers
 ----------------------------------*/
-.ui-widget { font-family: Trebuchet MS, Tahoma, Verdana, Arial, sans-serif; font-size: 1.1em; }
+.ui-widget { font-family: "Lucida Grande",Verdana,Arial,sans-serif; font-size: 11px; }
 .ui-widget .ui-widget { font-size: 1em; }
 .ui-widget input, .ui-widget select, .ui-widget textarea, .ui-widget button { font-family: Trebuchet MS, Tahoma, Verdana, Arial, sans-serif; font-size: 1em; }
 .ui-widget-content { border: 1px solid #dddddd; background: #eeeeee url(../img/ui-bg_highlight-soft_100_eeeeee_1x100.png) 50% top repeat-x; color: #333333; }
 .ui-widget-content a { color: #333333; }
-.ui-widget-header { border: 1px solid #e78f08; background: #f6a828 url(../img/ui-bg_gloss-wave_35_f6a828_500x100.png) 50% 50% repeat-x; color: #ffffff; font-weight: bold; }
+.ui-widget-header { border: 1px solid #7CA0C7; background: #81aad7 url(../img/default-bg.gif) 50% 50% repeat-x; color: #ffffff; font-weight: bold; }
 .ui-widget-header a { color: #ffffff; }
 
 /* Interaction states
@@ -345,6 +345,19 @@
 	font-weight: normal;
 	margin: -1px;
 }
+
+/*
+ * jQuery UI Progressbar 1.8.18
+ *
+ * Copyright 2011, AUTHORS.txt (http://jqueryui.com/about)
+ * Dual licensed under the MIT or GPL Version 2 licenses.
+ * http://jquery.org/license
+ *
+ * http://docs.jquery.com/UI/Progressbar#theming
+ */
+.ui-progressbar { height:1em; text-align: left; overflow: hidden; }
+.ui-progressbar .ui-progressbar-value {margin: -1px; height:100%; }
+.ui-progressbar .ui-progressbar-ani { background-image: url(../img/pbar-ani-blue.gif); }
 
 /* django-autocomplpete customizations */
 form ul.ui-autocomplete {
