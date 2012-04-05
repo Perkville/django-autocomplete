@@ -357,7 +357,7 @@
  */
 .ui-progressbar { height:1em; text-align: left; overflow: hidden; }
 .ui-progressbar .ui-progressbar-value {margin: -1px; height:100%; }
-.ui-progressbar .ui-progressbar-ani { background-image: url(../img/pbar-ani-blue.gif); }
+.ui-progressbar.ui-progressbar-ani .ui-progressbar-value { background-image: url(../img/pbar-ani-blue.gif); }
 
 /* django-autocomplpete customizations */
 form ul.ui-autocomplete {
