@@ -377,7 +377,7 @@ form ul.ui-autocomplete {
 	border-top: 0;
 }
 
-ul.ui-autocomplete div {
+ul.ui-autocomplete > div {
     display: table;
     width: 100%;
 }
@@ -389,6 +389,7 @@ ul.ui-autocomplete div .ui-menu-item {
 
 ul.ui-autocomplete div .ui-menu-item a {
 	display: table-cell;
+	vertical-align: top;
 }
 
 .ui-autocomplete .ui-corner-all,
