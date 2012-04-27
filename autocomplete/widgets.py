@@ -26,7 +26,7 @@ class AutocompleteWidget(forms.Widget):
 
     class Media:
         js = tuple(STATIC_URL + js for js in (
-            'js/jquery.min.js',
+#            'js/jquery.min.js',
             'js/jquery-ui.min.js',
             'js/jquery_autocomplete.js',
         ))
