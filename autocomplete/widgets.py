@@ -1,10 +1,11 @@
 from django import forms
+from django.conf import settings
+from django.core.urlresolvers import reverse
 from django.forms.util import flatatt
 from django.utils import simplejson
 from django.utils.encoding import force_unicode
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext as _
-from django.conf import settings
 
 from autocomplete.views import autocomplete as default_view
 
@@ -22,7 +23,7 @@ class AutocompleteWidget(forms.Widget):
         'multiple': False,
         'force_selection': True,
     }
-    
+
     class Media:
         js = tuple(STATIC_URL + js for js in (
             'js/jquery.min.js',
@@ -54,7 +55,9 @@ class AutocompleteWidget(forms.Widget):
             attrs['id'] = 'id_ac_%s' % name
 
             if self.settings.lookup:
-                related_url = '../../../%s/%s/' % (self.settings.field.rel.to._meta.app_label, self.settings.field.rel.to._meta.object_name.lower())
+                related_url = '%s%s/%s/' % (reverse('admin:index'),
+                                            self.settings.field.rel.to._meta.app_label,
+                                            self.settings.field.rel.to._meta.object_name.lower())
                 params = self.url_parameters()
                 if params:
                     url = '?' + '&amp;'.join(['%s=%s' % (k, v) for k, v in params.items()])
@@ -64,7 +67,7 @@ class AutocompleteWidget(forms.Widget):
                           u'onclick="return showRelatedObjectLookupPopup(this);"> '
                           u'<img src="%simg/admin/selector-search.gif" width="16" height="16" alt="%s" />'
                           u'</a>' % (related_url, url, name, settings.ADMIN_MEDIA_PREFIX, _('Lookup')))
-        
+
         else:
             hidden_id = 'id_hidden_%s' % name
         hidden_attrs = self.build_attrs(classes, type='hidden', name=name, value=value, id=hidden_id)
@@ -144,7 +147,7 @@ class MultipleAutocompleteWidget(AutocompleteWidget):
         if value:
             return value.split(',')
         return value
-    
+
     def initial_objects(self, value):
         settings = self.settings
         output = [u'<table class="ui-autocomplete-values">']
