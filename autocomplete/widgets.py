@@ -65,7 +65,7 @@ class AutocompleteWidget(forms.Widget):
                     url = ''
                 lookup = (u'<a href="%s%s" class="related-lookup" id="lookup_id_%s" '
                           u'onclick="return showRelatedObjectLookupPopup(this);"> '
-                          u'<img src="%simg/admin/selector-search.gif" width="16" height="16" alt="%s" />'
+                          u'<img src="%simg/selector-search.gif" width="16" height="16" alt="%s" />'
                           u'</a>' % (related_url, url, name, settings.ADMIN_MEDIA_PREFIX, _('Lookup')))
 
         else:
