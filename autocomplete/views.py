@@ -401,7 +401,7 @@ class AutocompleteView(object):
         from django.conf.urls.defaults import patterns, url
 
         urlpatterns = patterns('',
-            url(r'(.+)/$', self, name='autocomplete'))
+            url(r'(.+)/$', self, name='autocomplete', kwargs={'SSL': True}))
         return urlpatterns
 
     def urls(self):
